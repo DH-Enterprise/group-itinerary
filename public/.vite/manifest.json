@@ -1,1 +1,11 @@
-{}
+{
+  "assets/vite-app/main.tsx": {
+    "file": "assets/app-BSi6iohz.js",
+    "name": "app",
+    "src": "assets/vite-app/main.tsx",
+    "isEntry": true,
+    "css": [
+      "assets/app-BjuyMTpc.css"
+    ]
+  }
+}

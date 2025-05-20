@@ -13,10 +13,11 @@ export default defineConfig({
     build: {
         rollupOptions: {
             input: {
-                app: "./assets/vite-app/main.tsx"
+                app: "./assets/vite-app/main.tsx",
             },
         }
     },
+    // base: "./",
     resolve: {
         alias: {
             "@": path.resolve(__dirname, "assets/vite-app"),
