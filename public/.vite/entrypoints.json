@@ -1,6 +1,18 @@
 {
   "base": "./",
-  "entryPoints": {},
+  "entryPoints": {
+    "app": {
+      "css": [
+        "./assets/app-BjuyMTpc.css"
+      ],
+      "dynamic": [],
+      "js": [
+        "./assets/app-BSi6iohz.js"
+      ],
+      "legacy": false,
+      "preload": []
+    }
+  },
   "legacy": false,
   "metadatas": {},
   "version": [
