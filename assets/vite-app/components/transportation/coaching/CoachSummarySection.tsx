@@ -1,0 +1,171 @@
+
+import React from 'react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
+import { Transportation, CoachClass, CoachExtra } from '@/types/quote';
+
+interface CoachSummarySectionProps {
+  transport: Transportation;
+}
+
+const CoachSummarySection: React.FC<CoachSummarySectionProps> = ({ transport }) => {
+  // Create a default coaching details object if not present
+  const coachingDetails = transport.coachingDetails || {
+    driverDays: 7,
+    selectedCurrency: 'EUR',
+    exchangeRate: 1.25,
+    markupRate: 1.45,
+    coachClasses: [],
+    extras: [],
+  };
+
+  // Safely access coach classes and extras
+  const coachClasses = coachingDetails.coachClasses || [];
+  const extras = coachingDetails.extras || [];
+
+  const calculateTotals = (coachClass: CoachClass) => {
+    const { driverDays, exchangeRate, markupRate } = coachingDetails;
+    const dailyRate = coachClass.dailyRate || 0;
+    const baseNetForeign = dailyRate * driverDays;
+    const baseUSDNet = baseNetForeign * exchangeRate;
+    const baseUSDSell = baseUSDNet * markupRate;
+
+    // Calculate extras total
+    const extrasTotal = extras
+      .filter(extra => extra.enabled)
+      .reduce((sum, extra) => sum + ((extra.rate || 0) * (extra.days || 0)), 0);
+
+    return {
+      netForeign: baseNetForeign,
+      usdNet: baseUSDNet,
+      usdSell: baseUSDSell + extrasTotal,
+    };
+  };
+
+  const currencySymbol = coachingDetails.selectedCurrency === 'EUR' ? '€' : '£';
+
+  // Calculate the summary totals
+  const calculateSummaryTotals = () => {
+    let totalForeignCurrency = 0;
+    let totalForeignNet = 0;
+    let totalUSDNet = 0;
+    let totalUSDSell = 0;
+
+    // Add coach class totals
+    coachClasses
+      .filter(cc => cc.enabled)
+      .forEach((coachClass) => {
+        const { driverDays, exchangeRate, markupRate } = coachingDetails;
+        const dailyRate = coachClass.dailyRate || 0;
+        totalForeignCurrency += dailyRate;
+        
+        const baseNetForeign = dailyRate * driverDays;
+        totalForeignNet += baseNetForeign;
+        
+        const baseUSDNet = baseNetForeign * exchangeRate;
+        totalUSDNet += baseUSDNet;
+        
+        const baseUSDSell = baseUSDNet * markupRate;
+        totalUSDSell += baseUSDSell;
+      });
+
+    // Add extras totals
+    extras
+      .filter(extra => extra.enabled)
+      .forEach((extra) => {
+        const { exchangeRate, markupRate } = coachingDetails;
+        const extraRate = extra.rate || 0;
+        const extraDays = extra.days || 0;
+        
+        totalForeignCurrency += extraRate;
+        
+        const extraNetForeign = extraRate * extraDays;
+        totalForeignNet += extraNetForeign;
+        
+        const extraUSDNet = extraNetForeign * exchangeRate;
+        totalUSDNet += extraUSDNet;
+        
+        const extraUSDSell = extraUSDNet * markupRate;
+        totalUSDSell += extraUSDSell;
+      });
+
+    return {
+      totalForeignCurrency,
+      totalForeignNet,
+      totalUSDNet,
+      totalUSDSell,
+    };
+  };
+
+  const summaryTotals = calculateSummaryTotals();
+
+  // Update the transport cost with the calculated total
+  if (transport.cost !== summaryTotals.totalUSDSell) {
+    // We need to use setTimeout to avoid modifying props directly during render
+    setTimeout(() => {
+      // This is a bit of a hack, but it helps ensure the total cost is reflected in the transportation summary
+      const transportEvent = new CustomEvent('update-transport-cost', { 
+        detail: { 
+          id: transport.id, 
+          cost: summaryTotals.totalUSDSell
+        } 
+      });
+      document.dispatchEvent(transportEvent);
+    }, 0);
+  }
+
+  return (
+    <div className="space-y-6">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Coach Type</TableHead>
+            <TableHead>Days</TableHead>
+            <TableHead className="text-right">{coachingDetails.selectedCurrency}</TableHead>
+            <TableHead className="text-right">{coachingDetails.selectedCurrency} NET</TableHead>
+            <TableHead className="text-right">USD NET</TableHead>
+            <TableHead className="text-right">USD SELL</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {coachClasses
+            .filter(cc => cc.enabled)
+            .map((coachClass) => {
+              const totals = calculateTotals(coachClass);
+              return (
+                <TableRow key={coachClass.id}>
+                  <TableCell>{coachClass.maxCapacity} Pax {coachClass.type} Class Coach</TableCell>
+                  <TableCell>{coachingDetails.driverDays} days at</TableCell>
+                  <TableCell className="text-right">{currencySymbol}{coachClass.dailyRate}</TableCell>
+                  <TableCell className="text-right">{currencySymbol}{totals.netForeign.toFixed(2)}</TableCell>
+                  <TableCell className="text-right">$ {totals.usdNet.toFixed(2)}</TableCell>
+                  <TableCell className="text-right font-medium">$ {totals.usdSell.toFixed(2)}</TableCell>
+                </TableRow>
+              );
+          })}
+          {/* Additional Services */}
+          {extras.filter(extra => extra.enabled).map((extra) => (
+            <TableRow key={extra.id}>
+              <TableCell>{extra.name}</TableCell>
+              <TableCell>{extra.days} days at</TableCell>
+              <TableCell className="text-right">{currencySymbol}{extra.rate}</TableCell>
+              <TableCell className="text-right">{currencySymbol}{(extra.rate * extra.days).toFixed(2)}</TableCell>
+              <TableCell className="text-right">$ {(extra.rate * extra.days * coachingDetails.exchangeRate).toFixed(2)}</TableCell>
+              <TableCell className="text-right">$ {(extra.rate * extra.days * coachingDetails.exchangeRate * coachingDetails.markupRate).toFixed(2)}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+        <TableFooter>
+          <TableRow className="border-t-2 border-gray-300">
+            <TableCell colSpan={2} className="font-bold">TOTAL</TableCell>
+            <TableCell className="text-right font-bold">{currencySymbol}{summaryTotals.totalForeignCurrency.toFixed(2)}</TableCell>
+            <TableCell className="text-right font-bold">{currencySymbol}{summaryTotals.totalForeignNet.toFixed(2)}</TableCell>
+            <TableCell className="text-right font-bold">$ {summaryTotals.totalUSDNet.toFixed(2)}</TableCell>
+            <TableCell className="text-right font-bold">$ {summaryTotals.totalUSDSell.toFixed(2)}</TableCell>
+          </TableRow>
+        </TableFooter>
+      </Table>
+    </div>
+  );
+};
+
+export default CoachSummarySection;

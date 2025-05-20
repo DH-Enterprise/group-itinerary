@@ -1,1 +1,9 @@
-<p>hello</p>
+{% block stylesheets %}
+    {{ vite_entry_link_tags('app') }}
+{% endblock %}
+
+{% block javascripts %}
+    {{ vite_entry_script_tags('app') }}
+{% endblock %}
+
+<div id="root"></div>
