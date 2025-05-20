@@ -1,0 +1,13 @@
+{
+  "base": "./",
+  "entryPoints": {},
+  "legacy": false,
+  "metadatas": {},
+  "version": [
+    "8.1.0",
+    8,
+    1,
+    0
+  ],
+  "viteServer": null
+}

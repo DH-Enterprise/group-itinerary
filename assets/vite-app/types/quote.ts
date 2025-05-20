@@ -1,0 +1,150 @@
+export interface City {
+  id: string;
+  name: string;
+  country: string;
+  checkIn: Date;
+  checkOut: Date;
+}
+
+export interface RoomCategory {
+  id: string;
+  name: string;
+  rate: number;
+  quantity: number;
+}
+
+export interface RoomExtra {
+  id: string;
+  name: string;
+  rate: number;
+  quantity: number;
+}
+
+export interface Hotel {
+  id: string;
+  name: string;
+  city: string;
+  isPrimary: boolean;
+  roomCategories: RoomCategory[];
+  extras: RoomExtra[];
+  notes: string;
+}
+
+export interface Activity {
+  id: string;
+  name: string;
+  date: Date;
+  city: string;
+  type: 'tour' | 'restaurant' | 'golf' | 'other';
+  cost: number;
+  perPerson: boolean;
+  notes: string;
+  travelerCount?: number; // New optional property
+}
+
+export interface CoachExtra {
+  id: string;
+  name: string;
+  days: number;
+  rate: number;
+  enabled: boolean;
+}
+
+export type Currency = 'EUR' | 'GBP';
+
+export interface CoachClass {
+  id: string;
+  type: 'D' | 'F' | 'G';
+  maxCapacity: number;
+  dailyRate: number;
+  currency: Currency;
+  enabled: boolean;
+}
+
+export interface AirTransportDetails {
+  airline: string;
+  flightNumber: string;
+  departureTime: string;
+  arrivalTime: string;
+  ticketClass: 'economy' | 'premium' | 'business' | 'first';
+  ratePerPerson: number;
+  groupRate?: number;
+  travelerCount: number; // Add traveler count to track per-flight passengers
+}
+
+export interface Transportation {
+  id: string;
+  type: 'coaching' | 'air' | 'train' | 'ferry' | 'other';
+  from: string;
+  to: string;
+  date: Date;
+  cost: number;
+  notes: string;
+  details: string;
+  coachingDetails?: {
+    driverDays: number;
+    selectedCurrency: Currency;
+    exchangeRate: number;
+    markupRate: number;
+    extras: CoachExtra[];
+    coachClasses: CoachClass[];
+  };
+  airDetails?: AirTransportDetails;
+}
+
+export interface DailyItinerary {
+  id: string;
+  date: Date;
+  description: string;
+  activities: string[]; // IDs of activities
+}
+
+export interface Quote {
+  id: string;
+  name: string;
+  startDate: Date;
+  endDate: Date;
+  agentName: string;
+  agencyName: string;
+  travelerCount: number;
+  budget: number;
+  cities: City[];
+  hotels: Hotel[];
+  activities: Activity[];
+  transportation: Transportation[];
+  itinerary: DailyItinerary[];
+  inclusions: string[];
+  exclusions: string[];
+  termsAndConditions: string;
+  notes: string;
+  createdBy: string;
+  createdAt: Date;
+  updatedBy: string;
+  updatedAt: Date;
+  status: 'draft' | 'pending' | 'approved' | 'sent' | 'accepted' | 'rejected';
+  phase: 'initialization' | 'accommodations' | 'activities' | 'transportation' | 'itinerary' | 'finalization';
+}
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: 'travel_specialist' | 'quote_administrator' | 'team_manager' | 'qa_reviewer';
+}
+
+export interface QuoteHistory {
+  id: string;
+  quoteId: string;
+  userId: string;
+  timestamp: Date;
+  field: string;
+  oldValue: string;
+  newValue: string;
+  action: 'create' | 'update' | 'delete';
+}
+
+export enum PhaseStatus {
+  PENDING = 'pending',
+  ACTIVE = 'active',
+  COMPLETED = 'completed'
+}
