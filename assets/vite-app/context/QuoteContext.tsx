@@ -1,8 +1,9 @@
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { Quote, PhaseStatus } from '@/types/quote';
-import { emptyQuote, sampleQuote } from '@/data/mockData';
-import { toast } from '@/components/ui/use-toast';
+import { Quote, PhaseStatus } from '../types/quote';
+import { emptyQuote, sampleQuote } from '../data/mockData';
+import { toast } from '../components/ui/use-toast';
+import { dd } from '../utils/dd';
 
 interface QuoteContextType {
   quote: Quote;
@@ -41,13 +42,40 @@ export const QuoteProvider = ({ children }: QuoteProviderProps) => {
     }));
   };
 
-  const saveQuote = () => {
-    // In a real app, this would save to a database
-    console.log('Saving quote:', quote);
-    toast({
-      title: "Quote Saved",
-      description: "Your changes have been saved successfully.",
-    });
+  const saveQuote = async () => {
+    try {
+      const response = await fetch('/save-quote', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+        body: JSON.stringify({ quote }),
+      });
+
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(error || 'Failed to save quote');
+      }
+      
+      // The response will be handled by the dd() in the PHP controller
+      const data = await response.json();
+      
+      toast({
+        title: "Quote Saved",
+        description: "Your changes have been saved successfully.",
+      });
+      
+      return data;
+    } catch (error) {
+      console.error('Error saving quote:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to save quote. Please try again.",
+        variant: "destructive",
+      });
+      throw error;
+    }
   };
 
   const loadSampleQuote = () => {
