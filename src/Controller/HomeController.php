@@ -13,4 +13,10 @@ final class HomeController extends AbstractController
     {
         return $this->render('builder.html.twig');
     }
+
+    #[Route('/save-quote', name: 'save_quote', methods: ['POST'])]
+    public function saveQuote(Request $request): Response
+    {
+        dd($request->request->all());
+    }
 }
