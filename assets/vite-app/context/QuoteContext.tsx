@@ -55,25 +55,18 @@ export const QuoteProvider = ({ children }: QuoteProviderProps) => {
 
       if (!response.ok) {
         const error = await response.text();
+        console.error('Server error:', error);
         throw new Error(error || 'Failed to save quote');
       }
       
       // The response will be handled by the dd() in the PHP controller
       const data = await response.json();
-      
-      toast({
-        title: "Quote Saved",
-        description: "Your changes have been saved successfully.",
-      });
+      console.log('Quote saved successfully:', data);
       
       return data;
     } catch (error) {
-      console.error('Error saving quote:', error);
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to save quote. Please try again.",
-        variant: "destructive",
-      });
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save quote. Please try again.';
+      console.error('Error saving quote:', errorMessage, error);
       throw error;
     }
   };
