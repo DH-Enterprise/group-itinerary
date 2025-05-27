@@ -21,7 +21,7 @@ const TransportTabContent: React.FC<TransportTabContentProps> = ({
   defaultTravelerCount
 }) => {
   return (
-    <>
+    <div>
       <TransportActions onAddTransport={onAddTransport} />
       {transports.length === 0 ? (
         <EmptyTransportState />
@@ -33,7 +33,7 @@ const TransportTabContent: React.FC<TransportTabContentProps> = ({
           defaultTravelerCount={defaultTravelerCount}
         />
       )}
-    </>
+    </div>
   );
 };
 

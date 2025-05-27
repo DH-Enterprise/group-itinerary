@@ -137,7 +137,7 @@ const AccommodationsPhase = () => {
       {sortedCities.length === 0 ? (
         <EmptyAccommodationsState onBack={handleBack} />
       ) : (
-        <>
+        <div>
           <AccommodationCityTabs
             cities={sortedCities}
             activeCity={activeCity}
@@ -162,7 +162,7 @@ const AccommodationsPhase = () => {
             onBack={handleBack} 
             onContinue={handleContinue} 
           />
-        </>
+        </div>
       )}
     </div>
   );

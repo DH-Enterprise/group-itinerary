@@ -44,7 +44,7 @@ const InclusionsExclusionsContent = () => {
   };
 
   return (
-    <>
+    <div>
       <Card>
         <CardHeader>
           <CardTitle>Inclusions</CardTitle>
@@ -84,7 +84,7 @@ Personal expenses"
           />
         </CardContent>
       </Card>
-    </>
+    </div>
   );
 };
 

@@ -112,7 +112,7 @@ const ActivitiesPhase = () => {
           </CardContent>
         </Card>
       ) : (
-        <>
+        <div>
           <div className="bg-white rounded-lg shadow">
             <Tabs 
               defaultValue={activeCity || quote.cities[0]?.id} 
@@ -158,7 +158,7 @@ const ActivitiesPhase = () => {
               Continue to Transportation
             </Button>
           </div>
-        </>
+        </div>
       )}
     </div>
   );
