@@ -33,3 +33,5 @@ yarn-error.log
 
 /public/.vite/
 /public/assets/
+
+.DS_Store

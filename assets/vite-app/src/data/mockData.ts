@@ -394,7 +394,13 @@ export const sampleQuote: Quote = {
   endDate: new Date(2025, 5, 21),
   agentName: "Jennifer Smith",
   agencyName: "Luxury Travel Experts",
+  groupType: 'known',
   travelerCount: 14,
+  groupRanges: [
+    { id: '10-14', label: '10-14 travelers', min: 10, max: 14, selected: true },
+    { id: '15-19', label: '15-19 travelers', min: 15, max: 19, selected: true },
+    { id: '20-24', label: '20-24 travelers', min: 20, max: 24, selected: true }
+  ],
   budget: 75000,
   cities: sampleCities,
   hotels: sampleHotels,
@@ -435,7 +441,13 @@ export const emptyQuote: Quote = {
   endDate: new Date(),
   agentName: "",
   agencyName: "",
+  groupType: 'known',
   travelerCount: 10,
+  groupRanges: [
+    { id: '10-14', label: '10-14 travelers', min: 10, max: 14, selected: true },
+    { id: '15-19', label: '15-19 travelers', min: 15, max: 19, selected: true },
+    { id: '20-24', label: '20-24 travelers', min: 20, max: 24, selected: true }
+  ],
   budget: 0,
   cities: [],
   hotels: [],

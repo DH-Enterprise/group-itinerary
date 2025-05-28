@@ -1,0 +1,16 @@
+.git
+.gitignore
+.dockerignore
+.env
+/node_modules
+/vendor
+/var
+/docker
+Dockerfile
+docker-compose.override.yml
+*.log
+.idea
+.vscode
+*.swp
+*.swo
+.DS_Store

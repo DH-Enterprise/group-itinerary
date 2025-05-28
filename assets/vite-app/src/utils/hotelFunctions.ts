@@ -37,7 +37,8 @@ export const togglePrimaryHotel = (hotels: Hotel[], hotelId: string, cityId: str
 export const addRoomCategory = (hotels: Hotel[], hotelId: string): Hotel[] => {
   const newCategory: RoomCategory = {
     id: generateUniqueId(),
-    name: '',
+    name: 'Double Room', // Default to Double Room
+    category: '',
     rate: 0,
     quantity: 1
   };

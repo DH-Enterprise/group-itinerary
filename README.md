@@ -1,10 +1,64 @@
-# Welcome to your Lovable project
+# Group Itinerary Project
 
-## Project info
+## Docker Setup
+
+This project uses Docker for development with Nginx, PHP 8.3, PHP-FPM, and Node.js.
+
+### Prerequisites
+
+- Docker and Docker Compose installed on your system
+- Ports 80 and 5173 available on your machine
+
+### Starting the Development Environment
+
+1. **Add the domain to your hosts file**
+   Add the following line to your `/etc/hosts` file:
+   ```
+   127.0.0.1 group-itinerary.test
+   ```
+
+2. **Build and start the containers**
+   This will automatically install all PHP and Node.js dependencies during the build process.
+   ```bash
+   docker-compose up -d --build
+   ```
+   
+   The application will be available once the build process completes.
+
+### Accessing the Application
+
+- Web application: http://group-itinerary.test
+- Vite dev server: http://localhost:5173 (for hot module replacement)
+
+### Useful Commands
+
+- Stop all containers:
+  ```bash
+  docker-compose down
+  ```
+
+- View logs:
+  ```bash
+  docker-compose logs -f
+  ```
+
+- Run commands in the PHP container:
+  ```bash
+  docker-compose exec php [command]
+  ```
+
+- Run commands in the Node container:
+  ```bash
+  docker-compose exec node [command]
+  ```
+
+## Project Info
 
 **URL**: https://lovable.dev/projects/fd1a55d1-2201-4cea-853a-b36123bdb382
 
-## How can I edit this code?
+## Development
+
+### How can I edit this code?
 
 There are several ways of editing your application.
 

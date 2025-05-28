@@ -9,6 +9,7 @@ export interface City {
 export interface RoomCategory {
   id: string;
   name: string;
+  category?: string;
   rate: number;
   quantity: number;
 }
@@ -99,6 +100,16 @@ export interface DailyItinerary {
   activities: string[]; // IDs of activities
 }
 
+export type GroupType = 'known' | 'speculative';
+
+export interface GroupRange {
+  id: string;
+  label: string;
+  min: number;
+  max: number;
+  selected: boolean;
+}
+
 export interface Quote {
   id: string;
   name: string;
@@ -106,7 +117,9 @@ export interface Quote {
   endDate: Date;
   agentName: string;
   agencyName: string;
+  groupType: GroupType;
   travelerCount: number;
+  groupRanges: GroupRange[];
   budget: number;
   cities: City[];
   hotels: Hotel[];

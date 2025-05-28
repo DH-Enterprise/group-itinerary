@@ -2,6 +2,10 @@ import React, { useState } from 'react';
 import { useQuote } from '@/context/QuoteContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
+import { GroupType } from '@/types/quote';
 import { PhaseStatus } from '@/types/quote';
 import { generateUniqueId } from '@/utils/quoteUtils';
 import { toast } from '@/hooks/use-toast';
@@ -10,6 +14,14 @@ import BasicInformation from './initialization/BasicInformation';
 import CityList from './initialization/CityList';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
+
+interface BasicInformationProps {
+  quote: Quote;
+  onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  onNumberChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onGroupRangeToggle: (id: string, checked: boolean) => void;
+  showValidation?: boolean;
+}
 
 const InitializationPhase = () => {
   const { quote, setQuote, setPhaseStatus, setCurrentPhase } = useQuote();
@@ -93,24 +105,40 @@ const InitializationPhase = () => {
     }));
   };
 
+  const handleGroupTypeChange = (value: string) => {
+    setQuote(prev => ({
+      ...prev,
+      groupType: value as 'known' | 'speculative'
+    }));
+  };
+
+  const handleGroupRangeToggle = (id: string, checked: boolean) => {
+    setQuote(prev => ({
+      ...prev,
+      groupRanges: prev.groupRanges?.map(range => 
+        range.id === id ? { ...range, selected: checked } : range
+      ) || []
+    }));
+  };
+
+  const validateForm = () => {
+    if (!quote.agencyName || !quote.agentName || !quote.startDate || !quote.endDate) {
+      return false;
+    }
+    
+    if (!quote.travelerCount || quote.travelerCount < 10) {
+      return false;
+    }
+    
+    return true;
+  };
+
   const handleContinue = () => {
-    const requiredFields = {
-      name: quote.name,
-      agentName: quote.agentName,
-      agencyName: quote.agencyName,
-      travelerCount: quote.travelerCount >= 10,
-      budget: quote.budget > 0
-    };
-
-    const missingFields = Object.entries(requiredFields)
-      .filter(([_, isValid]) => !isValid)
-      .map(([field]) => field);
-
-    if (missingFields.length > 0) {
+    if (!validateForm()) {
       setShowValidation(true);
       toast({
-        title: "Missing Required Fields",
-        description: "Please complete all required fields before continuing.",
+        title: "Missing required fields",
+        description: "Please fill in all required fields.",
         variant: "destructive",
       });
       return;
@@ -137,8 +165,29 @@ const InitializationPhase = () => {
       
       <Card>
         <CardHeader>
-          <CardTitle>Basic Information</CardTitle>
-          <CardDescription>Enter the core details about this quote</CardDescription>
+          <div className="flex justify-between items-start">
+            <div className="space-y-1">
+              <CardTitle>Basic Information</CardTitle>
+              <CardDescription>Enter the core details about this quote</CardDescription>
+            </div>
+            <div className="space-y-2 w-64">
+              <Label htmlFor="groupType" className={cn((!quote.groupType) && showValidation && "text-destructive")}>
+                Group Type *
+              </Label>
+              <Select
+                value={quote.groupType || 'known'}
+                onValueChange={handleGroupTypeChange}
+              >
+                <SelectTrigger className={cn((!quote.groupType) && showValidation && "border-destructive")}>
+                  <SelectValue placeholder="Select group type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="known">Known Group</SelectItem>
+                  <SelectItem value="speculative">Speculative Group</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <DateRangeSelector
@@ -151,6 +200,7 @@ const InitializationPhase = () => {
             quote={quote}
             onInputChange={handleInputChange}
             onNumberChange={handleNumberChange}
+            onGroupRangeToggle={handleGroupRangeToggle}
             showValidation={showValidation}
           />
         </CardContent>
