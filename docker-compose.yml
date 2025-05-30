@@ -21,8 +21,29 @@ services:
       - ./:/var/www
     environment:
       - APP_ENV=dev
+      - DATABASE_URL=mysql://root:root@mariadb:3306/group-itinerary?serverVersion=mariadb-10.11.8&charset=utf8mb4
+    depends_on:
+      - mariadb
     networks:
       - app-network
+
+  mariadb:
+    image: mariadb:10.11
+    environment:
+      - MYSQL_DATABASE=group-itinerary
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=root
+      - MYSQL_ROOT_PASSWORD=root
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-usymfony", "-pChangeMe"]
+      timeout: 5s
+      retries: 10
 
   node:
     build:
@@ -41,3 +62,6 @@ services:
 networks:
   app-network:
     driver: bridge
+
+volumes:
+  mariadb_data:

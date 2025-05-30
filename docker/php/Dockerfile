@@ -15,9 +15,9 @@ RUN apt-get update && apt-get install -y \
     libpq-dev \
     && docker-php-ext-configure intl \
     && docker-php-ext-install -j$(nproc) intl \
-    && docker-php-ext-install pdo pdo_pgsql pgsql zip gd opcache exif pcntl bcmath \
+    && docker-php-ext-install pdo pdo_pgsql pgsql zip gd opcache exif pcntl bcmath mysqli pdo_mysql \
     && pecl install apcu \
-    && docker-php-ext-enable apcu
+    && docker-php-ext-enable apcu mysqli pdo_mysql
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
@@ -34,6 +34,9 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progre
 
 # Copy the rest of the application
 COPY . /var/www
+
+# Create necessary directories
+RUN mkdir -p /var/www/var/cache /var/www/var/log
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www \
