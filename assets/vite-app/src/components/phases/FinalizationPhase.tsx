@@ -253,7 +253,11 @@ const FinalizationPhase = () => {
                   Export PDF
                 </Button>
                 <div className="space-x-2">
-                  <Button variant="outline" size="icon">
+                  <Button 
+                    variant="outline" 
+                    size="icon"
+                    onClick={() => console.log('Viewing Blue Page for Travelers')}
+                  >
                     <Eye className="h-4 w-4" />
                   </Button>
                   <Button onClick={() => handleEmail('traveler')}>
