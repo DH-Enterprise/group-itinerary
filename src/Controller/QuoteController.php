@@ -11,8 +11,27 @@ use Symfony\Component\HttpFoundation\Request;
 
 class QuoteController extends AbstractController
 {
+    public function __construct(private EntityManagerInterface $entityManager)
+    {
+    }
+
     #[Route('/api/quotes', name: 'app_save_quote', methods: ['POST'])]
-    public function saveQuote(Request $request, EntityManagerInterface $entityManager): JsonResponse
+    public function saveQuote(Request $request): JsonResponse
+    {
+        return new JsonResponse(['id' => $this->createQuote($request)->getId()], 201);
+    }
+
+    #[Route('/api/quotes/preview-blue-page', name: 'app_preview_blue_page', methods: ['POST'])]
+    public function previewBluePage(Request $request): JsonResponse
+    {
+//        $quote = $this->createQuote($request);
+
+        $encodedQuoteData = base64_encode(gzcompress($request->getContent()));
+
+        return new JsonResponse(['status' => 'success', 'url' => 'http://sceptre.test/group-schedule?' . http_build_query(['quoteData' => $encodedQuoteData])]);
+    }
+
+    private function createQuote(Request $request): Quote
     {
         $data = json_decode($request->getContent(), true);
 
@@ -20,10 +39,10 @@ class QuoteController extends AbstractController
         $quote->setQuoteData($data);
         $quote->setCreatedAt(new \DateTimeImmutable());
         $quote->setUpdatedAt(new \DateTimeImmutable());
-        
-        $entityManager->persist($quote);
-        $entityManager->flush();
-        
-        return new JsonResponse(['id' => $quote->getId()], 201);
+
+        $this->entityManager->persist($quote);
+        $this->entityManager->flush();
+
+        return $quote;
     }
 }

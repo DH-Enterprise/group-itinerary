@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { PhaseStatus } from '@/types/quote';
 import { calculateTotalAccommodationCost, calculateTotalActivityCost, calculateTotalTransportationCost, calculatePerPersonCost, formatCurrency } from '@/utils/quoteUtils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Download, FileText, Printer, Send, Check, X, Eye, CalendarDays, Hotel, Bus, CircleDollarSign } from 'lucide-react';
+import { Download, FileText, Printer, Send, Check, X, Eye, CalendarDays, Hotel, Bus, CircleDollarSign, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/components/ui/use-toast';
@@ -13,6 +13,7 @@ import { toast } from '@/components/ui/use-toast';
 const FinalizationPhase = () => {
   const { quote, setQuote, setPhaseStatus, setCurrentPhase } = useQuote();
   const [activeTab, setActiveTab] = useState<string>('summary');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   
   const handleBack = () => {
     setCurrentPhase('itinerary');
@@ -28,8 +29,41 @@ const FinalizationPhase = () => {
   const handleEmail = (type: 'agent' | 'traveler') => {
     toast({
       title: `Quote ${type === 'agent' ? 'Agent' : 'Blue Page'} Emailed`,
-      description: `The quote has been sent successfully via email.`,
+      description: `The quote has been sent via email.`,
     });
+  };
+
+  const handlePreviewBluePage = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/quotes/preview-blue-page', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(quote),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to preview Blue Page');
+      }
+
+      const data = await response.json();
+      console.log('Blue Page preview requested', data);
+      
+      if (data.url) {
+        window.open(data.url, '_blank', 'noopener,noreferrer');
+      }
+    } catch (error) {
+      console.error('Error previewing Blue Page:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to preview Blue Page',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleApprove = () => {
@@ -53,7 +87,15 @@ const FinalizationPhase = () => {
   const remainingBudget = quote.budget - totalCost;
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 animate-fade-in relative">
+      {isLoading && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center">
+            <Loader2 className="h-12 w-12 text-travel-blue animate-spin mb-4" />
+            <p className="text-lg font-medium">Generating Blue Page Preview...</p>
+          </div>
+        </div>
+      )}
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold text-travel-blue-dark">Quote Finalization</h2>
         <div className="flex items-center">
@@ -256,7 +298,7 @@ const FinalizationPhase = () => {
                   <Button 
                     variant="outline" 
                     size="icon"
-                    onClick={() => console.log('Viewing Blue Page for Travelers')}
+                    onClick={handlePreviewBluePage}
                   >
                     <Eye className="h-4 w-4" />
                   </Button>
