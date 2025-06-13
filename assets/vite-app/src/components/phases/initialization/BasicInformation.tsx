@@ -90,12 +90,13 @@ const BasicInformation = ({
     const newFreeText = e.target.value;
     setFreeText(newFreeText);
     
-    // Combine with the structured part
+    // Combine with the structured part for the name
     const structuredPart = generateStructuredPart();
     const newName = newFreeText ? `${structuredPart} - ${newFreeText}` : structuredPart;
     
-    // Update the parent component
+    // Update both name and description in the parent component
     onInputChange({ target: { name: 'name', value: newName } } as React.ChangeEvent<HTMLInputElement>);
+    onInputChange({ target: { name: 'description', value: newFreeText } } as React.ChangeEvent<HTMLInputElement>);
   };
   
   const tripDuration = quote.startDate && quote.endDate 

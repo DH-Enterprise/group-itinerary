@@ -113,6 +113,7 @@ export interface GroupRange {
 export interface Quote {
   id: string;
   name: string;
+  description: string;
   startDate: Date;
   endDate: Date;
   agentName: string;
