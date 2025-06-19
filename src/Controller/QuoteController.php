@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Controller;
 
@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 
-class QuoteController extends AbstractController
+final class QuoteController extends AbstractController
 {
     public function __construct(private EntityManagerInterface $entityManager)
     {
@@ -24,11 +24,12 @@ class QuoteController extends AbstractController
     #[Route('/api/quotes/preview-blue-page', name: 'app_preview_blue_page', methods: ['POST'])]
     public function previewBluePage(Request $request): JsonResponse
     {
-//        $quote = $this->createQuote($request);
-
         $encodedQuoteData = base64_encode(gzcompress($request->getContent()));
 
-        return new JsonResponse(['status' => 'success', 'url' => 'http://sceptre.test/group-schedule?' . http_build_query(['quoteData' => $encodedQuoteData])]);
+        return new JsonResponse([
+            'status' => 'success',
+            'url' => 'http://sceptre.test/group-schedule?' . http_build_query(['quoteData' => $encodedQuoteData])
+        ]);
     }
 
     private function createQuote(Request $request): Quote

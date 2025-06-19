@@ -324,14 +324,23 @@ const BasicInformation = ({
         <Label htmlFor="agencyName" className={cn(isFieldInvalid(quote.agencyName) && "text-destructive")}>
           Agency Name *
         </Label>
-        <Input
-          id="agencyName"
-          name="agencyName"
-          value={quote.agencyName}
-          onChange={onInputChange}
-          placeholder="Agency's name"
-          className={cn(isFieldInvalid(quote.agencyName) && "border-destructive")}
-        />
+        <div className="relative">
+          <Input
+            id="agencyName"
+            name="agencyName"
+            value={quote.agencyName}
+            onChange={onInputChange}
+            placeholder="Agency's name"
+            readOnly
+            className={cn(
+              'bg-muted/50',
+              isFieldInvalid(quote.agencyName) ? 'border-destructive' : ''
+            )}
+          />
+          <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+            <span className="text-xs text-muted-foreground">Auto-filled</span>
+          </div>
+        </div>
         {isFieldInvalid(quote.agencyName) && (
           <div className="flex items-center gap-2 text-destructive text-sm mt-1">
             <AlertCircle className="h-4 w-4" />
