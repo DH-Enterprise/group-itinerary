@@ -43,12 +43,18 @@ export const QuoteProvider = ({ children }: QuoteProviderProps) => {
 
   const saveQuote = async () => {
     try {
+      // Ensure agentId is included in the payload
+      const payload = {
+        ...quote,
+        agentId: quote.agentId || null,
+      };
+
       const response = await fetch('/api/quotes', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(quote),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {

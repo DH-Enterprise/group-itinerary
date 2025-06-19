@@ -6,7 +6,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
 import { AlertCircle, ChevronsUpDown, Check } from 'lucide-react';
 import { Quote, GroupType, GroupRange } from '@/types/quote';
-import { searchAgents } from '@/utils/api/agentApi';
+import { searchAgents, Agent } from '@/utils/api/agentApi';
+import { cn } from '@/lib/utils';
 import * as Popover from '@radix-ui/react-popover';
 import { Command } from 'cmdk';
 import { Button } from '@/components/ui/button';
@@ -117,16 +118,29 @@ const BasicInformation = ({
   const showGroupRangeError = showValidation && quote.groupType === 'speculative' && !hasSelectedGroupRanges;
   
   // Agent search state
-  const [agents, setAgents] = useState<{id: string, name: string, email: string}[]>([]);
+  const [agents, setAgents] = useState<Agent[]>([]);
   const [isAgentSearchOpen, setIsAgentSearchOpen] = useState(false);
   const [agentSearchQuery, setAgentSearchQuery] = useState('');
   
-  // Search for agents when query changes
+  // Search for agents when query changes or when quote changes
   useEffect(() => {
     const search = async () => {
       if (agentSearchQuery.length > 1) {
         const results = await searchAgents(agentSearchQuery);
         setAgents(results);
+        
+        // If we have an agentId but no name, try to find and set the name
+        if (quote.agentId && !quote.agentName) {
+          const selectedAgent = results.find(a => a.id === quote.agentId);
+          if (selectedAgent) {
+            onInputChange({ 
+              target: { 
+                name: 'agentName', 
+                value: getAgentFullName(selectedAgent) 
+              } 
+            } as React.ChangeEvent<HTMLInputElement>);
+          }
+        }
       } else {
         setAgents([]);
       }
@@ -134,11 +148,31 @@ const BasicInformation = ({
     
     const timeoutId = setTimeout(search, 300);
     return () => clearTimeout(timeoutId);
-  }, [agentSearchQuery]);
+  }, [agentSearchQuery, quote.agentId]);
+  
+  // Get full agent name
+  const getAgentFullName = (agent: Agent) => {
+    return `${agent.firstName}${agent.middleName ? ' ' + agent.middleName : ''} ${agent.lastName}`.trim();
+  };
+  
+  // Get selected agent name from agents list
+  const getSelectedAgentName = useCallback(() => {
+    if (!quote.agentId) return '';
+    const selectedAgent = agents.find(a => a.id === quote.agentId);
+    return selectedAgent ? getAgentFullName(selectedAgent) : '';
+  }, [quote.agentId, agents]);
   
   // Handle agent selection
-  const handleAgentSelect = (agent: {id: string, name: string, email: string}) => {
-    onInputChange({ target: { name: 'agentName', value: agent.name } } as React.ChangeEvent<HTMLInputElement>);
+  const handleAgentSelect = (agent: Agent) => {
+    // Update agent ID
+    onInputChange({ target: { name: 'agentId', value: agent.id } } as React.ChangeEvent<HTMLInputElement>);
+    
+    // Update agent name (for display)
+    onInputChange({ target: { name: 'agentName', value: getAgentFullName(agent) } } as React.ChangeEvent<HTMLInputElement>);
+    
+    // Update agency name
+    onInputChange({ target: { name: 'agencyName', value: agent.agency.name } } as React.ChangeEvent<HTMLInputElement>);
+    
     setIsAgentSearchOpen(false);
   };
 
@@ -226,10 +260,11 @@ const BasicInformation = ({
               aria-expanded={isAgentSearchOpen}
               className={cn(
                 "w-full justify-between",
-                isFieldInvalid(quote.agentName) && "border-destructive"
+                isFieldInvalid(quote.agentId) && "border-destructive"
               )}
+              onClick={() => setIsAgentSearchOpen(!isAgentSearchOpen)}
             >
-              {quote.agentName || "Select an agent..."}
+              {getSelectedAgentName() || "Select agent..."}
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </Popover.Trigger>
@@ -251,19 +286,23 @@ const BasicInformation = ({
                     agents.map((agent) => (
                       <Command.Item
                         key={agent.id}
-                        value={agent.name}
+                        value={getAgentFullName(agent)}
                         onSelect={() => handleAgentSelect(agent)}
-                        className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none aria-selected:bg-accent aria-selected:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+                        className="relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground aria-selected:bg-accent aria-selected:text-accent-foreground"
                       >
                         <Check
                           className={cn(
                             "mr-2 h-4 w-4",
-                            quote.agentName === agent.name ? "opacity-100" : "opacity-0"
+                            quote.agentName === getAgentFullName(agent) ? "opacity-100" : "opacity-0"
                           )}
                         />
                         <div>
-                          <div className="font-medium">{agent.name}</div>
-                          <div className="text-xs text-muted-foreground">{agent.email}</div>
+                          <div className="font-medium">
+                            {getAgentFullName(agent)}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {agent.agency.name}
+                          </div>
                         </div>
                       </Command.Item>
                     ))
