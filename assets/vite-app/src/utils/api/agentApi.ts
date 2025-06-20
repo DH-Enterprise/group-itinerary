@@ -50,7 +50,6 @@ export const searchAgents = async (query: string): Promise<Agent[]> => {
         'Pragma': 'no-cache',
         'Expires': '0'
       },
-      withCredentials: true // Include cookies in the request
     });
     
     return response.data || [];
