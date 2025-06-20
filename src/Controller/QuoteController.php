@@ -11,8 +11,10 @@ use Symfony\Component\HttpFoundation\Request;
 
 final class QuoteController extends AbstractController
 {
-    public function __construct(private EntityManagerInterface $entityManager)
-    {
+    public function __construct(
+        private EntityManagerInterface $entityManager,
+        private string $scheduleBaseUrl
+    ) {
     }
 
     #[Route('/api/quotes', name: 'app_save_quote', methods: ['POST'])]
@@ -28,7 +30,8 @@ final class QuoteController extends AbstractController
 
         return new JsonResponse([
             'status' => 'success',
-            'url' => 'http://sceptre.test/group-schedule?' . http_build_query(['quoteData' => $encodedQuoteData])
+            'url' => rtrim($this->scheduleBaseUrl, '/') .
+                '/fit/group-schedule?' . http_build_query(['quoteData' => $encodedQuoteData])
         ]);
     }
 
