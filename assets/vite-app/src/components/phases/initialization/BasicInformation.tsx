@@ -122,7 +122,34 @@ const BasicInformation = ({
   const [isAgentSearchOpen, setIsAgentSearchOpen] = useState(false);
   const [agentSearchQuery, setAgentSearchQuery] = useState('');
   
-  // Search for agents when query changes or when quote changes
+  // Initialize agent search with existing agent name if available
+  useEffect(() => {
+    if (quote.agentName && !agentSearchQuery) {
+      setAgentSearchQuery(quote.agentName);
+      
+      // If we have an agentId but no search results, try to find the agent
+      if (quote.agentId && agents.length === 0) {
+        const search = async () => {
+          const results = await searchAgents(quote.agentName || '');
+          setAgents(results);
+          
+          // If we found the agent, update the state
+          const selectedAgent = results.find(a => a.id === quote.agentId);
+          if (selectedAgent) {
+            onInputChange({ 
+              target: { 
+                name: 'agentName', 
+                value: getAgentFullName(selectedAgent) 
+              } 
+            } as React.ChangeEvent<HTMLInputElement>);
+          }
+        };
+        search();
+      }
+    }
+  }, [quote.agentId, quote.agentName]);
+
+  // Search for agents when query changes
   useEffect(() => {
     const search = async () => {
       if (agentSearchQuery.length > 1) {
@@ -155,24 +182,41 @@ const BasicInformation = ({
     return `${agent.firstName}${agent.middleName ? ' ' + agent.middleName : ''} ${agent.lastName}`.trim();
   };
   
-  // Get selected agent name from agents list
+  // Get selected agent name from agents list or from quote
   const getSelectedAgentName = useCallback(() => {
+    if (quote.agentName) return quote.agentName;
     if (!quote.agentId) return '';
     const selectedAgent = agents.find(a => a.id === quote.agentId);
     return selectedAgent ? getAgentFullName(selectedAgent) : '';
-  }, [quote.agentId, agents]);
+  }, [quote.agentId, quote.agentName, agents]);
   
   // Handle agent selection
   const handleAgentSelect = (agent: Agent) => {
-    // Update agent ID
-    onInputChange({ target: { name: 'agentId', value: agent.id } } as React.ChangeEvent<HTMLInputElement>);
+    // Create a single synthetic event to update all related fields at once
+    const updateFields = (updates: Record<string, any>) => {
+      Object.entries(updates).forEach(([name, value]) => {
+        onInputChange({ 
+          target: { 
+            name, 
+            value,
+            // Add type assertion to make TypeScript happy
+            type: 'change' 
+          } 
+        } as React.ChangeEvent<HTMLInputElement>);
+      });
+    };
+
+    // Update all related fields in a single batch
+    updateFields({
+      agentId: agent.id,
+      agentName: getAgentFullName(agent),
+      agencyName: agent.agency.name
+    });
     
-    // Update agent name (for display)
-    onInputChange({ target: { name: 'agentName', value: getAgentFullName(agent) } } as React.ChangeEvent<HTMLInputElement>);
+    // Also update the search query to show the selected agent's name
+    setAgentSearchQuery(getAgentFullName(agent));
     
-    // Update agency name
-    onInputChange({ target: { name: 'agencyName', value: agent.agency.name } } as React.ChangeEvent<HTMLInputElement>);
-    
+    // Close the dropdown
     setIsAgentSearchOpen(false);
   };
 

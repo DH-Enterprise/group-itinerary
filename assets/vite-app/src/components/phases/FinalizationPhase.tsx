@@ -36,10 +36,10 @@ const FinalizationPhase = () => {
   const handlePreviewBluePage = async () => {
     setIsLoading(true);
     try {
-      // Ensure agentId is included in the payload
+      // Ensure agentId is included in the payload, using nullish coalescing to handle 0 values
       const payload = {
         ...quote,
-        agentId: quote.agentId || null,
+        agentId: quote.agentId ?? undefined, // Only set to undefined if agentId is null or undefined
       };
 
       const response = await fetch('/api/quotes/preview-blue-page', {
