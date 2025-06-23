@@ -5,7 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
 import { AlertCircle, ChevronsUpDown, Check } from 'lucide-react';
-import { Quote, GroupType, GroupRange } from '@/types/quote';
+import { Quote } from '@/types/quote';
 import { searchAgents, Agent } from '@/utils/api/agentApi';
 import * as Popover from '@radix-ui/react-popover';
 import { Command } from 'cmdk';
