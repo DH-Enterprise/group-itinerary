@@ -121,17 +121,17 @@ const BasicInformation = ({
   const [isAgentSearchOpen, setIsAgentSearchOpen] = useState(false);
   const [agentSearchQuery, setAgentSearchQuery] = useState('');
   
-  // Search for agents when query changes or when quote changes
+  // Search for agents when query changes or when dropdown is opened
   useEffect(() => {
-    const search = async () => {
-      if (agentSearchQuery.length > 1) {
-        const results = await searchAgents(agentSearchQuery);
+    const search = async (searchQuery: string) => {
+      if (searchQuery.length > 1 || isAgentSearchOpen) {
+        const results = await searchAgents(searchQuery || '');
         setAgents(results);
         
-        // If we have an agentId but no name, try to find and set the name
-        if (quote.agentId && !quote.agentName) {
+        // If we have an agentId but no name in the results, try to find and set the name
+        if (quote.agentId) {
           const selectedAgent = results.find(a => a.id === quote.agentId);
-          if (selectedAgent) {
+          if (selectedAgent && !quote.agentName) {
             onInputChange({ 
               target: { 
                 name: 'agentName', 
@@ -145,21 +145,42 @@ const BasicInformation = ({
       }
     };
     
-    const timeoutId = setTimeout(search, 300);
+    const timeoutId = setTimeout(() => search(agentSearchQuery), 300);
     return () => clearTimeout(timeoutId);
-  }, [agentSearchQuery, quote.agentId]);
+  }, [agentSearchQuery, isAgentSearchOpen, quote.agentId, quote.agentName, onInputChange]);
+  
+  // Load the selected agent when dropdown is opened
+  useEffect(() => {
+    if (isAgentSearchOpen && quote.agentId && !agentSearchQuery) {
+      // Trigger a search with empty query to load agents
+      const loadSelectedAgent = async () => {
+        const results = await searchAgents('');
+        setAgents(results);
+      };
+      loadSelectedAgent();
+    }
+  }, [isAgentSearchOpen, quote.agentId, agentSearchQuery]);
   
   // Get full agent name
   const getAgentFullName = (agent: Agent) => {
     return `${agent.firstName}${agent.middleName ? ' ' + agent.middleName : ''} ${agent.lastName}`.trim();
   };
   
-  // Get selected agent name from agents list
+  // Get selected agent name from agents list or use the stored agent name
   const getSelectedAgentName = useCallback(() => {
-    if (!quote.agentId) return '';
-    const selectedAgent = agents.find(a => a.id === quote.agentId);
-    return selectedAgent ? getAgentFullName(selectedAgent) : '';
-  }, [quote.agentId, agents]);
+    // If we have a selected agent in the list, use that
+    if (quote.agentId) {
+      const selectedAgent = agents.find(a => a.id === quote.agentId);
+      if (selectedAgent) {
+        return getAgentFullName(selectedAgent);
+      }
+      // If not found in agents but we have a stored agent name, use that
+      if (quote.agentName) {
+        return quote.agentName;
+      }
+    }
+    return '';
+  }, [quote.agentId, quote.agentName, agents]);
   
   // Handle agent selection
   const handleAgentSelect = (agent: Agent) => {
@@ -172,6 +193,8 @@ const BasicInformation = ({
     // Update agency name
     onInputChange({ target: { name: 'agencyName', value: agent.agency.name } } as React.ChangeEvent<HTMLInputElement>);
     
+    // Clear search query and close dropdown
+    setAgentSearchQuery('');
     setIsAgentSearchOpen(false);
   };
 
