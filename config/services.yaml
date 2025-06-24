@@ -7,6 +7,7 @@ parameters:
     # Admin API configuration
     app.admin_base_url: '%env(resolve:ADMIN_BASE_URL)%'
     app.admin_api_token: '%env(resolve:ADMIN_API_TOKEN)%'
+    app.basic_auth_credentials: '%env(resolve:BASIC_AUTH_CREDENTIALS)%'
 
 services:
     # default configuration for services in *this* file

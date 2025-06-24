@@ -14,11 +14,13 @@ final class AgentController extends AbstractController
 {
     private string $adminBaseUrl;
     private string $adminApiToken;
+    private string $basicAuthCredentials;
 
     public function __construct(ParameterBagInterface $parameterBag)
     {
         $this->adminBaseUrl = rtrim($parameterBag->get('app.admin_base_url'), '/');
         $this->adminApiToken = $parameterBag->get('app.admin_api_token');
+        $this->basicAuthCredentials = $parameterBag->get('app.basic_auth_credentials');
     }
 
     #[Route('/search', name: 'api_agents_search', methods: ['GET'])]
@@ -32,17 +34,21 @@ final class AgentController extends AbstractController
 
         $targetUrl = $this->adminBaseUrl . '/json/agent';
 
+        $authHeaders = array_filter(['Basic' => $this->basicAuthCredentials, 'Bearer' => $this->adminApiToken]);
+        $authHeader = '';
+        foreach ($authHeaders as $type => $token) {
+            $authHeader .= "{$type} {$token}, ";
+        }
         $response = $httpClient->request(
             'GET',
             $targetUrl,
             [
-                'auth_basic' => ['', ''],
                 'query' => ['search' => $searchQuery],
                 'headers' => [
                     'Accept' => 'application/json',
                     'Content-Type' => 'application/json',
                     'Cache-Control' => 'no-cache',
-                    'Authorization' => 'Bearer ' . $this->adminApiToken,
+                    'Authorization' => trim($authHeader, ', '),
                 ],
             ]
         );
