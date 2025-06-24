@@ -4,6 +4,10 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    # Admin API configuration
+    app.admin_base_url: '%env(resolve:ADMIN_BASE_URL)%'
+    app.admin_api_token: '%env(resolve:ADMIN_API_TOKEN)%'
+    app.basic_auth_credentials: '%env(resolve:BASIC_AUTH_CREDENTIALS)%'
 
 services:
     # default configuration for services in *this* file
@@ -22,3 +26,11 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    # Configure controllers with required parameters
+    App\Controller\QuoteController:
+        arguments:
+            $scheduleBaseUrl: '%app.schedule_base_url%'
+    
+    App\Controller\Api\AgentController:
+        arguments: ['@parameter_bag']

@@ -4,8 +4,12 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
-import { AlertCircle } from 'lucide-react';
-import { Quote, GroupType, GroupRange } from '@/types/quote';
+import { AlertCircle, ChevronsUpDown, Check } from 'lucide-react';
+import { Quote } from '@/types/quote';
+import { searchAgents, Agent } from '@/utils/api/agentApi';
+import * as Popover from '@radix-ui/react-popover';
+import { Command } from 'cmdk';
+import { Button } from '@/components/ui/button';
 
 interface BasicInformationProps {
   quote: Quote;
@@ -90,12 +94,13 @@ const BasicInformation = ({
     const newFreeText = e.target.value;
     setFreeText(newFreeText);
     
-    // Combine with the structured part
+    // Combine with the structured part for the name
     const structuredPart = generateStructuredPart();
     const newName = newFreeText ? `${structuredPart} - ${newFreeText}` : structuredPart;
     
-    // Update the parent component
+    // Update both name and description in the parent component
     onInputChange({ target: { name: 'name', value: newName } } as React.ChangeEvent<HTMLInputElement>);
+    onInputChange({ target: { name: 'description', value: newFreeText } } as React.ChangeEvent<HTMLInputElement>);
   };
   
   const tripDuration = quote.startDate && quote.endDate 
@@ -110,6 +115,88 @@ const BasicInformation = ({
 
   const hasSelectedGroupRanges = quote.groupRanges?.some(range => range.selected) ?? false;
   const showGroupRangeError = showValidation && quote.groupType === 'speculative' && !hasSelectedGroupRanges;
+  
+  // Agent search state
+  const [agents, setAgents] = useState<Agent[]>([]);
+  const [isAgentSearchOpen, setIsAgentSearchOpen] = useState(false);
+  const [agentSearchQuery, setAgentSearchQuery] = useState('');
+  
+  // Search for agents when query changes or when dropdown is opened
+  useEffect(() => {
+    const search = async (searchQuery: string) => {
+      if (searchQuery.length > 1 || isAgentSearchOpen) {
+        const results = await searchAgents(searchQuery || '');
+        setAgents(results);
+        
+        // If we have an agentId but no name in the results, try to find and set the name
+        if (quote.agentId) {
+          const selectedAgent = results.find(a => a.id === quote.agentId);
+          if (selectedAgent && !quote.agentName) {
+            onInputChange({ 
+              target: { 
+                name: 'agentName', 
+                value: getAgentFullName(selectedAgent) 
+              } 
+            } as React.ChangeEvent<HTMLInputElement>);
+          }
+        }
+      } else {
+        setAgents([]);
+      }
+    };
+    
+    const timeoutId = setTimeout(() => search(agentSearchQuery), 300);
+    return () => clearTimeout(timeoutId);
+  }, [agentSearchQuery, isAgentSearchOpen, quote.agentId, quote.agentName, onInputChange]);
+  
+  // Load the selected agent when dropdown is opened
+  useEffect(() => {
+    if (isAgentSearchOpen && quote.agentId && !agentSearchQuery) {
+      // Trigger a search with empty query to load agents
+      const loadSelectedAgent = async () => {
+        const results = await searchAgents('');
+        setAgents(results);
+      };
+      loadSelectedAgent();
+    }
+  }, [isAgentSearchOpen, quote.agentId, agentSearchQuery]);
+  
+  // Get full agent name
+  const getAgentFullName = (agent: Agent) => {
+    return `${agent.firstName}${agent.middleName ? ' ' + agent.middleName : ''} ${agent.lastName}`.trim();
+  };
+  
+  // Get selected agent name from agents list or use the stored agent name
+  const getSelectedAgentName = useCallback(() => {
+    // If we have a selected agent in the list, use that
+    if (quote.agentId) {
+      const selectedAgent = agents.find(a => a.id === quote.agentId);
+      if (selectedAgent) {
+        return getAgentFullName(selectedAgent);
+      }
+      // If not found in agents but we have a stored agent name, use that
+      if (quote.agentName) {
+        return quote.agentName;
+      }
+    }
+    return '';
+  }, [quote.agentId, quote.agentName, agents]);
+  
+  // Handle agent selection
+  const handleAgentSelect = (agent: Agent) => {
+    // Update agent ID
+    onInputChange({ target: { name: 'agentId', value: agent.id } } as React.ChangeEvent<HTMLInputElement>);
+    
+    // Update agent name (for display)
+    onInputChange({ target: { name: 'agentName', value: getAgentFullName(agent) } } as React.ChangeEvent<HTMLInputElement>);
+    
+    // Update agency name
+    onInputChange({ target: { name: 'agencyName', value: agent.agency.name } } as React.ChangeEvent<HTMLInputElement>);
+    
+    // Clear search query and close dropdown
+    setAgentSearchQuery('');
+    setIsAgentSearchOpen(false);
+  };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -187,14 +274,66 @@ const BasicInformation = ({
         <Label htmlFor="agentName" className={cn(isFieldInvalid(quote.agentName) && "text-destructive")}>
           Agent Name *
         </Label>
-        <Input
-          id="agentName"
-          name="agentName"
-          value={quote.agentName}
-          onChange={onInputChange}
-          placeholder="Agent's name"
-          className={cn(isFieldInvalid(quote.agentName) && "border-destructive")}
-        />
+        <Popover.Root open={isAgentSearchOpen} onOpenChange={setIsAgentSearchOpen}>
+          <Popover.Trigger asChild>
+            <Button
+              variant="outline"
+              role="combobox"
+              aria-expanded={isAgentSearchOpen}
+              className={cn(
+                "w-full justify-between",
+                isFieldInvalid(quote.agentId) && "border-destructive"
+              )}
+              onClick={() => setIsAgentSearchOpen(!isAgentSearchOpen)}
+            >
+              {getSelectedAgentName() || "Select agent..."}
+              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            </Button>
+          </Popover.Trigger>
+          <Popover.Content className="w-[300px] p-0" align="start" sideOffset={4}>
+            <div className="rounded-md border bg-popover text-popover-foreground shadow-md">
+              <Command className="rounded-lg border">
+                <Command.Input 
+                  placeholder="Search agents..." 
+                  value={agentSearchQuery}
+                  onValueChange={setAgentSearchQuery}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                />
+                <Command.List className="max-h-[300px] overflow-y-auto">
+                  {agents.length === 0 ? (
+                    <div className="py-6 text-center text-sm">
+                      No agents found.
+                    </div>
+                  ) : (
+                    agents.map((agent) => (
+                      <Command.Item
+                        key={agent.id}
+                        value={getAgentFullName(agent)}
+                        onSelect={() => handleAgentSelect(agent)}
+                        className="relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground aria-selected:bg-accent aria-selected:text-accent-foreground"
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            quote.agentName === getAgentFullName(agent) ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        <div>
+                          <div className="font-medium">
+                            {getAgentFullName(agent)}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {agent.agency.name}
+                          </div>
+                        </div>
+                      </Command.Item>
+                    ))
+                  )}
+                </Command.List>
+              </Command>
+            </div>
+          </Popover.Content>
+        </Popover.Root>
         {isFieldInvalid(quote.agentName) && (
           <div className="flex items-center gap-2 text-destructive text-sm mt-1">
             <AlertCircle className="h-4 w-4" />
@@ -207,14 +346,23 @@ const BasicInformation = ({
         <Label htmlFor="agencyName" className={cn(isFieldInvalid(quote.agencyName) && "text-destructive")}>
           Agency Name *
         </Label>
-        <Input
-          id="agencyName"
-          name="agencyName"
-          value={quote.agencyName}
-          onChange={onInputChange}
-          placeholder="Agency's name"
-          className={cn(isFieldInvalid(quote.agencyName) && "border-destructive")}
-        />
+        <div className="relative">
+          <Input
+            id="agencyName"
+            name="agencyName"
+            value={quote.agencyName}
+            onChange={onInputChange}
+            placeholder="Agency's name"
+            readOnly
+            className={cn(
+              'bg-muted/50',
+              isFieldInvalid(quote.agencyName) ? 'border-destructive' : ''
+            )}
+          />
+          <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+            <span className="text-xs text-muted-foreground">Auto-filled</span>
+          </div>
+        </div>
         {isFieldInvalid(quote.agencyName) && (
           <div className="flex items-center gap-2 text-destructive text-sm mt-1">
             <AlertCircle className="h-4 w-4" />

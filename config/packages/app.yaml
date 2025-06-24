@@ -1,0 +1,4 @@
+# This file is auto-generated, please avoid modifying it directly.
+# Create a new file named "app.local.yaml" to override these settings in your local environment.
+parameters:
+    app.schedule_base_url: '%env(resolve:SCHEDULE_BASE_URL)%'

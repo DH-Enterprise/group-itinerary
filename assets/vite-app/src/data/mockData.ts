@@ -72,15 +72,19 @@ export const sampleHotels: Hotel[] = [
     roomCategories: [
       {
         id: generateUniqueId(),
-        name: "Deluxe Room",
-        rate: 350,
-        quantity: 5
+        name: "Single Room",
+        type: "Single",
+        category: "Standard",
+        rate: 250,
+        quantity: 3
       },
       {
         id: generateUniqueId(),
-        name: "Suite",
-        rate: 550,
-        quantity: 2
+        name: "Double Room",
+        type: "Double",
+        category: "Standard",
+        rate: 400,
+        quantity: 4
       }
     ],
     extras: [
@@ -101,15 +105,19 @@ export const sampleHotels: Hotel[] = [
     roomCategories: [
       {
         id: generateUniqueId(),
-        name: "Classic Room",
-        rate: 280,
-        quantity: 4
+        name: "Single Room",
+        type: "Single",
+        category: "Standard",
+        rate: 220,
+        quantity: 3
       },
       {
         id: generateUniqueId(),
-        name: "River View Suite",
-        rate: 420,
-        quantity: 3
+        name: "Double Room",
+        type: "Double",
+        category: "Superior",
+        rate: 380,
+        quantity: 4
       }
     ],
     extras: [
@@ -130,15 +138,19 @@ export const sampleHotels: Hotel[] = [
     roomCategories: [
       {
         id: generateUniqueId(),
-        name: "Classic Room",
-        rate: 310,
-        quantity: 5
+        name: "Single Room",
+        type: "Single",
+        category: "Standard",
+        rate: 320,
+        quantity: 4
       },
       {
         id: generateUniqueId(),
-        name: "Executive Suite",
-        rate: 520,
-        quantity: 2
+        name: "Double Room",
+        type: "Double",
+        category: "Superior",
+        rate: 450,
+        quantity: 4
       }
     ],
     extras: [
@@ -159,15 +171,19 @@ export const sampleHotels: Hotel[] = [
     roomCategories: [
       {
         id: generateUniqueId(),
-        name: "Superior Room",
-        rate: 240,
-        quantity: 5
+        name: "Single Room",
+        type: "Single",
+        category: "Standard",
+        rate: 200,
+        quantity: 3
       },
       {
         id: generateUniqueId(),
-        name: "Junior Suite",
-        rate: 380,
-        quantity: 2
+        name: "Double Room",
+        type: "Double",
+        category: "Superior",
+        rate: 350,
+        quantity: 4
       }
     ],
     extras: [

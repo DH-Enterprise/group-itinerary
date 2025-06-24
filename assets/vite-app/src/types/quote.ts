@@ -113,9 +113,11 @@ export interface GroupRange {
 export interface Quote {
   id: string;
   name: string;
+  description?: string;
   startDate: Date;
   endDate: Date;
-  agentName: string;
+  agentId?: number;
+  agentName?: string;
   agencyName: string;
   groupType: GroupType;
   travelerCount: number;

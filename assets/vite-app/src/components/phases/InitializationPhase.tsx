@@ -122,12 +122,23 @@ const InitializationPhase = () => {
   };
 
   const validateForm = () => {
+    // Check required fields that apply to all group types
     if (!quote.agencyName || !quote.agentName || !quote.startDate || !quote.endDate) {
       return false;
     }
     
-    if (!quote.travelerCount || quote.travelerCount < 10) {
-      return false;
+    // Validate based on group type
+    if (quote.groupType === 'known') {
+      // For 'known' groups, we need a valid traveler count
+      if (!quote.travelerCount || quote.travelerCount < 10) {
+        return false;
+      }
+    } else {
+      // For 'speculative' groups, we need at least one group range selected
+      const hasSelectedGroupRanges = quote.groupRanges?.some(range => range.selected) ?? false;
+      if (!hasSelectedGroupRanges) {
+        return false;
+      }
     }
     
     return true;

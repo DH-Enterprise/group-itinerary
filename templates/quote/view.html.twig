@@ -1,0 +1,15 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Quote #{{ quote.id }}{% endblock %}
+
+{% block stylesheets %}
+    {{ vite_entry_link_tags('app') }}
+{% endblock %}
+
+{% block javascripts %}
+    {{ vite_entry_script_tags('app') }}
+{% endblock %}
+
+{% block body %}
+<div id="root"></div>
+{% endblock %}
