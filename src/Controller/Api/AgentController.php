@@ -5,11 +5,9 @@ namespace App\Controller\Api;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpClient\HttpClient;
-use Symfony\Component\HttpClient\Exception\TransportException;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 #[Route('/api/agents')]
 final class AgentController extends AbstractController
@@ -24,7 +22,7 @@ final class AgentController extends AbstractController
     }
 
     #[Route('/search', name: 'api_agents_search', methods: ['GET'])]
-    public function search(Request $request): JsonResponse
+    public function search(Request $request, HttpClientInterface $httpClient): JsonResponse
     {
         $searchQuery = trim($request->query->get('search', ''));
 
@@ -32,17 +30,13 @@ final class AgentController extends AbstractController
             return $this->json([]);
         }
 
-        $httpClient = HttpClient::create([
-            'timeout' => 5,
-            'max_redirects' => 3,
-        ]);
-
         $targetUrl = $this->adminBaseUrl . '/json/agent';
 
         $response = $httpClient->request(
             'GET',
             $targetUrl,
             [
+                'auth_basic' => ['', ''],
                 'query' => ['search' => $searchQuery],
                 'headers' => [
                     'Accept' => 'application/json',
