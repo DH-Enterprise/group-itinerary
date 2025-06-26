@@ -44,6 +44,10 @@ export interface Activity {
   perPerson: boolean;
   notes: string;
   travelerCount?: number; // New optional property
+  companyName?: string;
+  companyContactEmail?: string;
+  companyContactPhone?: string;
+  companyAddress?: string;
 }
 
 export interface CoachExtra {

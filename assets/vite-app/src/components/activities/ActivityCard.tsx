@@ -358,6 +358,50 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
             rows={3}
           />
         </div>
+
+        <div className="space-y-4 pt-2">
+          <h4 className="font-medium">Company Information</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor={`company-name-${activity.id}`}>Company Name</Label>
+              <Input
+                id={`company-name-${activity.id}`}
+                value={activity.companyName || ''}
+                onChange={(e) => updateActivity(activity.id, 'companyName', e.target.value)}
+                placeholder="Enter company name"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor={`company-email-${activity.id}`}>Contact Email</Label>
+              <Input
+                id={`company-email-${activity.id}`}
+                type="email"
+                value={activity.companyContactEmail || ''}
+                onChange={(e) => updateActivity(activity.id, 'companyContactEmail', e.target.value)}
+                placeholder="contact@company.com"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor={`company-phone-${activity.id}`}>Contact Phone</Label>
+              <Input
+                id={`company-phone-${activity.id}`}
+                type="tel"
+                value={activity.companyContactPhone || ''}
+                onChange={(e) => updateActivity(activity.id, 'companyContactPhone', e.target.value)}
+                placeholder="+1 (555) 123-4567"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor={`company-address-${activity.id}`}>Address</Label>
+              <Input
+                id={`company-address-${activity.id}`}
+                value={activity.companyAddress || ''}
+                onChange={(e) => updateActivity(activity.id, 'companyAddress', e.target.value)}
+                placeholder="123 Main St, City, Country"
+              />
+            </div>
+          </div>
+        </div>
       </CardContent>
       <CardFooter className="pt-0">
         <div className="w-full">
