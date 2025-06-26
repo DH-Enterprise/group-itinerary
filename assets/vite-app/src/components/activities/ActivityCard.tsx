@@ -1,7 +1,8 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { format } from 'date-fns';
-import { Trash, Users, CalendarIcon, RefreshCw } from 'lucide-react';
+import { Trash, Users, CalendarIcon, RefreshCw, Check } from 'lucide-react';
+import { useQuote } from '@/context/QuoteContext';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -64,8 +65,52 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
   };
   
   // Use activity-specific traveler count if available, otherwise use the default
-  const activityTravelerCount = activity.travelerCount !== undefined ? activity.travelerCount : travelerCount;
-  const totalCost = activity.perPerson ? activity.cost * activityTravelerCount : activity.costUSD || 0;
+  // Get the quote context to access groupRanges
+  const { quote } = useQuote();
+  
+  // Get only the selected group ranges from quote context
+  const selectedRanges = quote.groupRanges
+    .filter(range => range.selected)
+    .reduce((acc, range) => ({
+      ...acc,
+      [range.id]: true
+    }), {});
+    
+  // Get only the selected group ranges for display
+  const selectedGroupRanges = quote.groupRanges.filter(range => range.selected);
+
+  // Calculate traveler counts and costs for each selected group range
+  const getTravelerCounts = () => {
+    if (quote.groupType === 'known') {
+      const count = activity.travelerCount !== undefined ? activity.travelerCount : travelerCount;
+      return [{ 
+        count, 
+        cost: activity.perPerson ? activity.costUSD * count : activity.costUSD,
+        label: `${count} travelers`
+      }];
+    } else {
+      return Object.entries(selectedRanges)
+        .filter(([_, selected]) => selected)
+        .map(([rangeId]) => {
+          const range = quote.groupRanges.find(r => r.id === rangeId);
+          if (!range) return null;
+          const count = range.min; // Use the minimum value of the range
+          return {
+            rangeId,
+            label: `${range.min}-${range.max} travelers`,
+            count,
+            cost: activity.perPerson ? activity.costUSD * count : activity.costUSD
+          };
+        })
+        .filter(Boolean);
+    }
+  };
+
+  // Only calculate costs if there are selected group ranges
+  const travelerCounts = quote.groupType === 'speculative' && selectedGroupRanges.length === 0 
+    ? [] 
+    : getTravelerCounts();
+  const totalCost = travelerCounts.reduce((sum, item) => sum + (item?.cost || 0), 0);
   
   return (
     <Card>
@@ -83,8 +128,9 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
         </div>
         <CardDescription>
           {format(activity.date, 'EEEE, MMMM d, yyyy')} • {formatCurrency(totalCost)}
-          {activity.perPerson && activityTravelerCount !== travelerCount && 
-            ` • ${activityTravelerCount}/${travelerCount} travelers`}
+          {activity.perPerson && quote.groupType === 'known' && (
+            ` • ${activity.travelerCount || travelerCount} travelers`
+          )}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4 pt-2">
@@ -240,39 +286,68 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
 
         {/* Traveler count section - only show when perPerson is true */}
         {activity.perPerson && (
-          <div className="space-y-2">
-            <Label htmlFor={`activity-travelers-${activity.id}`} className="flex items-center">
-              <Users className="h-4 w-4 mr-1" /> Number of Travelers
-            </Label>
-            <div className="flex items-center gap-2">
-              <Input
-                id={`activity-travelers-${activity.id}`}
-                type="number"
-                min="1"
-                max={travelerCount}
-                value={activityTravelerCount}
-                onChange={(e) => {
-                  const value = parseInt(e.target.value) || 1;
-                  const clampedValue = Math.min(Math.max(value, 1), travelerCount);
-                  updateActivity(activity.id, 'travelerCount', clampedValue);
-                }}
-                className="max-w-24"
-              />
-              <span className="text-sm text-gray-500">of {travelerCount} total travelers</span>
-              {activityTravelerCount !== travelerCount && (
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => updateActivity(activity.id, 'travelerCount', travelerCount)}
-                  className="ml-auto text-xs"
-                >
-                  Reset to All
-                </Button>
-              )}
-            </div>
+          <div className="space-y-4">
+            {quote.groupType === 'known' ? (
+              <div className="space-y-2">
+                <Label htmlFor={`activity-travelers-${activity.id}`} className="flex items-center">
+                  <Users className="h-4 w-4 mr-1" /> Number of Travelers
+                </Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    id={`activity-travelers-${activity.id}`}
+                    type="number"
+                    min="1"
+                    max={travelerCount}
+                    value={activity.travelerCount || travelerCount}
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value) || 1;
+                      const clampedValue = Math.min(Math.max(value, 1), travelerCount);
+                      updateActivity(activity.id, 'travelerCount', clampedValue);
+                    }}
+                    className="max-w-24"
+                  />
+                  <span className="text-sm text-gray-500">of {travelerCount} total travelers</span>
+                  {activity.travelerCount && activity.travelerCount !== travelerCount && (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => updateActivity(activity.id, 'travelerCount', travelerCount)}
+                      className="ml-auto text-xs"
+                    >
+                      Reset to All
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Label className="flex items-center">
+                  <Users className="h-4 w-4 mr-1" /> Group Sizes
+                </Label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {selectedGroupRanges.map((range) => (
+                    <div 
+                      key={range.id}
+                      className="flex items-center p-3 border rounded-lg bg-blue-50 border-blue-200"
+                    >
+                      <div className="w-5 h-5 border rounded flex items-center justify-center mr-3 bg-blue-600 border-blue-600">
+                        <Check className="h-4 w-4 text-white" />
+                      </div>
+                      <div>
+                        <div className="font-medium">
+                          {activity.perPerson 
+                            ? `${formatCurrency(activity.costUSD)} × ${range.min} travelers (${range.label})`
+                            : range.label}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
-        
+
         <div className="space-y-2">
           <Label htmlFor={`activity-notes-${activity.id}`}>Notes</Label>
           <Textarea
@@ -285,14 +360,41 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
         </div>
       </CardContent>
       <CardFooter className="pt-0">
-        <div className="w-full flex justify-between text-sm">
-          <div className="text-gray-500">
-            {activity.perPerson ? 
-              `${formatCurrency(activity.costUSD)} × ${activityTravelerCount} travelers` : 
-              'Group rate'}
-          </div>
-          <div className="font-medium">
-            Total: {formatCurrency(totalCost)}
+        <div className="w-full">
+          <div className="flex justify-between items-start">
+            <div className="text-gray-500">
+              {quote.groupType === 'known' ? (
+                activity.perPerson ? (
+                  `${formatCurrency(activity.costUSD)} × ${activity.travelerCount || travelerCount} travelers`
+                ) : (
+                  'Group rate'
+                )
+              ) : (
+                <div className="space-y-1">
+                  {travelerCounts.map((item, index) => (
+                    item && (
+                      <div key={item.rangeId || index} className="flex items-center">
+                        {activity.perPerson 
+                          ? `${formatCurrency(activity.costUSD)} × ${item.count} travelers (${item.label})`
+                          : item.label}
+                        <span className="ml-2 font-medium">
+                          {formatCurrency(item.cost || 0)}
+                        </span>
+                      </div>
+                    )
+                  ))}
+                  {travelerCounts.length === 0 && 'Select group sizes'}
+                </div>
+              )}
+            </div>
+            <div className="font-medium text-right">
+              <div>Total: {formatCurrency(totalCost)}</div>
+              {quote.groupType !== 'known' && travelerCounts.length > 1 && (
+                <div className="text-xs text-gray-500 mt-1">
+                  Based on minimum group sizes
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </CardFooter>
