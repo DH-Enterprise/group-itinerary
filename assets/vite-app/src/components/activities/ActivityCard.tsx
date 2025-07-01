@@ -31,10 +31,10 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
     { value: 'golf', label: 'Golf' },
     { value: 'other', label: 'Other' }
   ];
-  
+
   // Use the useActivityCosts hook to manage cost calculations
   const { activity: updatedActivity, handleCostChange } = useActivityCosts(activity);
-  
+
   // Update parent component when local activity changes
   useEffect(() => {
     // Check each field for changes and update parent one by one
@@ -45,29 +45,29 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
       }
     });
   }, [updatedActivity]);
-  
+
   // Handle cost changes with immediate parent update
   const handleCostUpdate = (field: 'cost' | 'costUSD' | 'exchangeRate', value: number) => {
     // First update the local state
     handleCostChange(field, value);
-    
+
     // Get the updated values from the hook's state
     const updatedCosts = {
       cost: field === 'cost' ? value : updatedActivity.cost,
       costUSD: field === 'costUSD' ? value : updatedActivity.costUSD,
       exchangeRate: field === 'exchangeRate' ? value : (updatedActivity.exchangeRate || 1)
     };
-    
+
     // Update the parent with each cost-related field
     updateActivity(activity.id, 'cost', updatedCosts.cost);
     updateActivity(activity.id, 'costUSD', updatedCosts.costUSD);
     updateActivity(activity.id, 'exchangeRate', updatedCosts.exchangeRate);
   };
-  
+
   // Use activity-specific traveler count if available, otherwise use the default
   // Get the quote context to access groupRanges
   const { quote } = useQuote();
-  
+
   // Get only the selected group ranges from quote context
   const selectedRanges = quote.groupRanges
     .filter(range => range.selected)
@@ -75,7 +75,7 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
       ...acc,
       [range.id]: true
     }), {});
-    
+
   // Get only the selected group ranges for display
   const selectedGroupRanges = quote.groupRanges.filter(range => range.selected);
 
@@ -83,8 +83,8 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
   const getTravelerCounts = () => {
     if (quote.groupType === 'known') {
       const count = activity.travelerCount !== undefined ? activity.travelerCount : travelerCount;
-      return [{ 
-        count, 
+      return [{
+        count,
         cost: activity.perPerson ? activity.costUSD * count : activity.costUSD,
         label: `${count} travelers`
       }];
@@ -107,18 +107,18 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
   };
 
   // Only calculate costs if there are selected group ranges
-  const travelerCounts = quote.groupType === 'speculative' && selectedGroupRanges.length === 0 
-    ? [] 
+  const travelerCounts = quote.groupType === 'speculative' && selectedGroupRanges.length === 0
+    ? []
     : getTravelerCounts();
   const totalCost = travelerCounts.reduce((sum, item) => sum + (item?.cost || 0), 0);
-  
+
   return (
     <Card>
       <CardHeader className="pb-2">
         <div className="flex justify-between items-center">
           <CardTitle className="text-lg">{activity.name || 'New Activity'}</CardTitle>
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             size="icon"
             onClick={() => removeActivity(activity.id)}
             className="hover:bg-red-50 hover:text-red-600"
@@ -144,7 +144,7 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
               placeholder="Enter activity name"
             />
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor={`activity-type-${activity.id}`}>Activity Type</Label>
             <Select
@@ -164,7 +164,7 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
             </Select>
           </div>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label>Date</Label>
@@ -191,7 +191,7 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
               </PopoverContent>
             </Popover>
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor={`activity-currency-${activity.id}`}>Currency</Label>
             <Select
@@ -210,14 +210,14 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
               </SelectContent>
             </Select>
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor={`activity-exchange-rate-${activity.id}`}>
               <div className="flex items-center justify-between">
                 <span>Exchange Rate to USD</span>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   className="h-6 px-2 text-xs text-muted-foreground"
                   onClick={() => updateActivity(activity.id, 'exchangeRate', 1)}
                 >
@@ -235,7 +235,7 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
               placeholder="1.0"
             />
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor={`activity-cost-${activity.id}`}>
               Cost ({activity.currency || 'USD'})
@@ -249,7 +249,7 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
               placeholder="0.00"
             />
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor={`activity-cost-usd-${activity.id}`}>
               Cost (USD)
@@ -269,10 +269,10 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
               </span>
             </div>
           </div>
-          
+
           <div className="space-y-2">
             <div className="flex items-center space-x-2 pt-6">
-              <Switch 
+              <Switch
                 id={`activity-per-person-${activity.id}`}
                 checked={activity.perPerson}
                 onCheckedChange={(checked) => updateActivity(activity.id, 'perPerson', checked)}
@@ -308,9 +308,9 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
                   />
                   <span className="text-sm text-gray-500">of {travelerCount} total travelers</span>
                   {activity.travelerCount && activity.travelerCount !== travelerCount && (
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
+                    <Button
+                      variant="outline"
+                      size="sm"
                       onClick={() => updateActivity(activity.id, 'travelerCount', travelerCount)}
                       className="ml-auto text-xs"
                     >
@@ -326,7 +326,7 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
                 </Label>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                   {selectedGroupRanges.map((range) => (
-                    <div 
+                    <div
                       key={range.id}
                       className="flex items-center p-3 border rounded-lg bg-blue-50 border-blue-200"
                     >
@@ -335,7 +335,7 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
                       </div>
                       <div>
                         <div className="font-medium">
-                          {activity.perPerson 
+                          {activity.perPerson
                             ? `${formatCurrency(activity.costUSD)} × ${range.min} travelers (${range.label})`
                             : range.label}
                         </div>
@@ -405,40 +405,38 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
       </CardContent>
       <CardFooter className="pt-0">
         <div className="w-full">
-          <div className="flex justify-between items-start">
-            <div className="text-gray-500">
-              {quote.groupType === 'known' ? (
-                activity.perPerson ? (
-                  `${formatCurrency(activity.costUSD)} × ${activity.travelerCount || travelerCount} travelers`
-                ) : (
-                  'Group rate'
-                )
-              ) : (
-                <div className="space-y-1">
-                  {travelerCounts.map((item, index) => (
-                    item && (
-                      <div key={item.rangeId || index} className="flex items-center">
-                        {activity.perPerson 
+          <div className="space-y-2">
+            {quote.groupType === 'known' ? (
+              <div className="flex justify-between items-center">
+                <div className="text-gray-500">
+                  {activity.perPerson 
+                    ? `${formatCurrency(activity.costUSD)} × ${activity.travelerCount || travelerCount} travelers`
+                    : 'Group rate'}
+                </div>
+                <div className="font-medium">
+                  Total: {formatCurrency(totalCost)}
+                </div>
+              </div>
+            ) : (
+              travelerCounts.length > 0 ? (
+                travelerCounts.map((item, index) => (
+                  item && (
+                    <div key={`row-${item.rangeId || index}`} className="flex justify-between items-center">
+                      <div className="text-gray-500">
+                        {activity.perPerson
                           ? `${formatCurrency(activity.costUSD)} × ${item.count} travelers (${item.label})`
                           : item.label}
-                        <span className="ml-2 font-medium">
-                          {formatCurrency(item.cost || 0)}
-                        </span>
                       </div>
-                    )
-                  ))}
-                  {travelerCounts.length === 0 && 'Select group sizes'}
-                </div>
-              )}
-            </div>
-            <div className="font-medium text-right">
-              <div>Total: {formatCurrency(totalCost)}</div>
-              {quote.groupType !== 'known' && travelerCounts.length > 1 && (
-                <div className="text-xs text-gray-500 mt-1">
-                  Based on minimum group sizes
-                </div>
-              )}
-            </div>
+                      <div className="font-medium">
+                        Total: {formatCurrency(item.cost || 0)}
+                      </div>
+                    </div>
+                  )
+                ))
+              ) : (
+                <div className="text-gray-500">Select group sizes</div>
+              )
+            )}
           </div>
         </div>
       </CardFooter>
