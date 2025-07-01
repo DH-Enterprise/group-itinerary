@@ -1,7 +1,7 @@
-
 import React, { useEffect, useState } from 'react';
 import { format } from 'date-fns';
-import { Trash, Users, CalendarIcon, RefreshCw, Check } from 'lucide-react';
+import { Trash, Users, CalendarIcon, RefreshCw, Check, Info } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useQuote } from '@/context/QuoteContext';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -138,27 +138,27 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
           <div className="space-y-2">
             <Label htmlFor={`activity-name-${activity.id}`}>Activity Name</Label>
             <Input
-              id={`activity-name-${activity.id}`}
-              value={activity.name}
-              onChange={(e) => updateActivity(activity.id, 'name', e.target.value)}
-              placeholder="Enter activity name"
+                id={`activity-name-${activity.id}`}
+                value={activity.name}
+                onChange={(e) => updateActivity(activity.id, 'name', e.target.value)}
+                placeholder="Enter activity name"
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor={`activity-type-${activity.id}`}>Activity Type</Label>
             <Select
-              value={activity.type}
-              onValueChange={(value) => updateActivity(activity.id, 'type', value)}
+                value={activity.type}
+                onValueChange={(value) => updateActivity(activity.id, 'type', value)}
             >
               <SelectTrigger id={`activity-type-${activity.id}`}>
-                <SelectValue placeholder="Select type" />
+                <SelectValue placeholder="Select type"/>
               </SelectTrigger>
               <SelectContent>
                 {activityTypes.map(type => (
-                  <SelectItem key={type.value} value={type.value}>
-                    {type.label}
-                  </SelectItem>
+                    <SelectItem key={type.value} value={type.value}>
+                      {type.label}
+                    </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -171,22 +171,22 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
             <Popover>
               <PopoverTrigger asChild>
                 <Button
-                  variant={"outline"}
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !activity.date && "text-muted-foreground"
-                  )}
+                    variant={"outline"}
+                    className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !activity.date && "text-muted-foreground"
+                    )}
                 >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  <CalendarIcon className="mr-2 h-4 w-4"/>
                   {activity.date ? format(activity.date, "PPP") : <span>Pick a date</span>}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
                 <Calendar
-                  mode="single"
-                  selected={activity.date}
-                  onSelect={(date) => date && updateActivity(activity.id, 'date', date)}
-                  initialFocus
+                    mode="single"
+                    selected={activity.date}
+                    onSelect={(date) => date && updateActivity(activity.id, 'date', date)}
+                    initialFocus
                 />
               </PopoverContent>
             </Popover>
@@ -195,13 +195,13 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
           <div className="space-y-2">
             <Label htmlFor={`activity-currency-${activity.id}`}>Currency</Label>
             <Select
-              value={activity.currency || 'USD'}
-              onValueChange={(value) => {
-                updateActivity(activity.id, 'currency', value as 'USD' | 'EUR' | 'GBP');
-              }}
+                value={activity.currency || 'USD'}
+                onValueChange={(value) => {
+                  updateActivity(activity.id, 'currency', value as 'USD' | 'EUR' | 'GBP');
+                }}
             >
               <SelectTrigger id={`activity-currency-${activity.id}`}>
-                <SelectValue placeholder="Select currency" />
+                <SelectValue placeholder="Select currency"/>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="USD">USD ($)</SelectItem>
@@ -216,23 +216,23 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
               <div className="flex items-center justify-between">
                 <span>Exchange Rate to USD</span>
                 <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 px-2 text-xs text-muted-foreground"
-                  onClick={() => updateActivity(activity.id, 'exchangeRate', 1)}
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 px-2 text-xs text-muted-foreground"
+                    onClick={() => updateActivity(activity.id, 'exchangeRate', 1)}
                 >
-                  <RefreshCw className="h-3 w-3 mr-1" /> Reset
+                  <RefreshCw className="h-3 w-3 mr-1"/> Reset
                 </Button>
               </div>
             </Label>
             <Input
-              id={`activity-exchange-rate-${activity.id}`}
-              type="number"
-              step="0.0001"
-              min="0"
-              value={activity.exchangeRate || 1}
-              onChange={(e) => handleCostChange('exchangeRate', parseFloat(e.target.value) || 1)}
-              placeholder="1.0"
+                id={`activity-exchange-rate-${activity.id}`}
+                type="number"
+                step="0.0001"
+                min="0"
+                value={activity.exchangeRate || 1}
+                onChange={(e) => handleCostChange('exchangeRate', parseFloat(e.target.value) || 1)}
+                placeholder="1.0"
             />
           </div>
 
@@ -241,12 +241,12 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
               Cost ({activity.currency || 'USD'})
             </Label>
             <Input
-              id={`activity-cost-${activity.id}`}
-              type="number"
-              step="0.01"
-              value={activity.cost || ''}
-              onChange={(e) => handleCostChange('cost', parseFloat(e.target.value) || 0)}
-              placeholder="0.00"
+                id={`activity-cost-${activity.id}`}
+                type="number"
+                step="0.01"
+                value={activity.cost || ''}
+                onChange={(e) => handleCostChange('cost', parseFloat(e.target.value) || 0)}
+                placeholder="0.00"
             />
           </div>
 
@@ -256,13 +256,13 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
             </Label>
             <div className="relative">
               <Input
-                id={`activity-cost-usd-${activity.id}`}
-                type="number"
-                step="0.01"
-                value={activity.costUSD?.toFixed(2) || '0.00'}
-                onChange={(e) => handleCostUpdate('costUSD', parseFloat(e.target.value) || 0)}
-                placeholder="0.00"
-                className="pr-10"
+                  id={`activity-cost-usd-${activity.id}`}
+                  type="number"
+                  step="0.01"
+                  value={activity.costUSD?.toFixed(2) || '0.00'}
+                  onChange={(e) => handleCostUpdate('costUSD', parseFloat(e.target.value) || 0)}
+                  placeholder="0.00"
+                  className="pr-10"
               />
               <span className="absolute right-2 top-2.5 text-sm text-muted-foreground">
                 = {activity.costUSD?.toFixed(2)} USD
@@ -273,9 +273,9 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
           <div className="space-y-2">
             <div className="flex items-center space-x-2 pt-6">
               <Switch
-                id={`activity-per-person-${activity.id}`}
-                checked={activity.perPerson}
-                onCheckedChange={(checked) => updateActivity(activity.id, 'perPerson', checked)}
+                  id={`activity-per-person-${activity.id}`}
+                  checked={activity.perPerson}
+                  onCheckedChange={(checked) => updateActivity(activity.id, 'perPerson', checked)}
               />
               <Label htmlFor={`activity-per-person-${activity.id}`} className="text-sm">
                 Price is per person
@@ -286,83 +286,139 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
 
         {/* Traveler count section - only show when perPerson is true */}
         {activity.perPerson && (
-          <div className="space-y-4">
-            {quote.groupType === 'known' ? (
-              <div className="space-y-2">
-                <Label htmlFor={`activity-travelers-${activity.id}`} className="flex items-center">
-                  <Users className="h-4 w-4 mr-1" /> Number of Travelers
-                </Label>
-                <div className="flex items-center gap-2">
-                  <Input
-                    id={`activity-travelers-${activity.id}`}
-                    type="number"
-                    min="1"
-                    max={travelerCount}
-                    value={activity.travelerCount || travelerCount}
-                    onChange={(e) => {
-                      const value = parseInt(e.target.value) || 1;
-                      const clampedValue = Math.min(Math.max(value, 1), travelerCount);
-                      updateActivity(activity.id, 'travelerCount', clampedValue);
-                    }}
-                    className="max-w-24"
-                  />
-                  <span className="text-sm text-gray-500">of {travelerCount} total travelers</span>
-                  {activity.travelerCount && activity.travelerCount !== travelerCount && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => updateActivity(activity.id, 'travelerCount', travelerCount)}
-                      className="ml-auto text-xs"
-                    >
-                      Reset to All
-                    </Button>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <Label className="flex items-center">
-                  <Users className="h-4 w-4 mr-1" /> Group Sizes
-                </Label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                  {selectedGroupRanges.map((range) => (
-                    <div
-                      key={range.id}
-                      className="flex items-center p-3 border rounded-lg bg-blue-50 border-blue-200"
-                    >
-                      <div className="w-5 h-5 border rounded flex items-center justify-center mr-3 bg-blue-600 border-blue-600">
-                        <Check className="h-4 w-4 text-white" />
-                      </div>
-                      <div>
-                        <div className="font-medium">
-                          {activity.perPerson
-                            ? `${formatCurrency(activity.costUSD)} × ${range.min} travelers (${range.label})`
-                            : range.label}
-                        </div>
-                      </div>
+            <div className="space-y-4">
+              {quote.groupType === 'known' ? (
+                  <div className="space-y-2">
+                    <Label htmlFor={`activity-travelers-${activity.id}`} className="flex items-center">
+                      <Users className="h-4 w-4 mr-1"/> Number of Travelers
+                    </Label>
+                    <div className="flex items-center gap-2">
+                      <Input
+                          id={`activity-travelers-${activity.id}`}
+                          type="number"
+                          min="1"
+                          max={travelerCount}
+                          value={activity.travelerCount || travelerCount}
+                          onChange={(e) => {
+                            const value = parseInt(e.target.value) || 1;
+                            const clampedValue = Math.min(Math.max(value, 1), travelerCount);
+                            updateActivity(activity.id, 'travelerCount', clampedValue);
+                          }}
+                          className="max-w-24"
+                      />
+                      <span className="text-sm text-gray-500">of {travelerCount} total travelers</span>
+                      {activity.travelerCount && activity.travelerCount !== travelerCount && (
+                          <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => updateActivity(activity.id, 'travelerCount', travelerCount)}
+                              className="ml-auto text-xs"
+                          >
+                            Reset to All
+                          </Button>
+                      )}
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
+                  </div>
+              ) : (
+                  <div className="space-y-2">
+                    <Label className="flex items-center">
+                      <Users className="h-4 w-4 mr-1"/> Group Sizes
+                    </Label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      {selectedGroupRanges.map((range) => (
+                          <div
+                              key={range.id}
+                              className="flex items-center p-3 border rounded-lg bg-blue-50 border-blue-200"
+                          >
+                            <div
+                                className="w-5 h-5 border rounded flex items-center justify-center mr-3 bg-blue-600 border-blue-600">
+                              <Check className="h-4 w-4 text-white"/>
+                            </div>
+                            <div>
+                              <div className="font-medium">
+                                {activity.perPerson
+                                    ? `${formatCurrency(activity.costUSD)} × ${range.min} travelers (${range.label})`
+                                    : range.label}
+                              </div>
+                            </div>
+                          </div>
+                      ))}
+                    </div>
+                  </div>
+              )}
+            </div>
         )}
 
         <div className="space-y-2">
-          <Label htmlFor={`activity-notes-${activity.id}`}>Notes</Label>
+          <div className="flex items-center gap-2">
+            <Label htmlFor={`activity-notes-${activity.id}`}>Remarks</Label>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button type="button" className="focus:outline-none">
+                  <Info className="h-4 w-4 text-muted-foreground hover:text-foreground transition-colors" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>This will be shown on blue page</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
           <Textarea
-            id={`activity-notes-${activity.id}`}
-            value={activity.notes}
-            onChange={(e) => updateActivity(activity.id, 'notes', e.target.value)}
-            placeholder="Add any notes about this activity..."
+            id={`activity-remarks-${activity.id}`}
+            value={activity.remarks}
+            onChange={(e) => updateActivity(activity.id, 'remarks', e.target.value)}
+            placeholder="Add any necessary inclusions, exclusions or other important info here"
             rows={3}
           />
+        </div>
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Label htmlFor={`activity-internal-notes-${activity.id}`}>Internal Notes</Label>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button type="button" className="focus:outline-none">
+                  <Info className="h-4 w-4 text-muted-foreground hover:text-foreground transition-colors" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>This will not be shown on blue page</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+          <Textarea
+            id={`activity-internal-notes-${activity.id}`}
+            value={activity.internalNotes || ''}
+            onChange={(e) => updateActivity(activity.id, 'internalNotes', e.target.value)}
+            placeholder="Add internal notes that won't be visible to clients"
+            rows={2}
+          />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor={`meeting-address-${activity.id}`}>Meeting Address</Label>
+            <Input
+              id={`meeting-address-${activity.id}`}
+              value={activity.meetingAddress || ''}
+              onChange={(e) => updateActivity(activity.id, 'meetingAddress', e.target.value)}
+              placeholder="123 Main St, City, Country"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor={`meeting-time-${activity.id}`}>Meeting Time</Label>
+            <Input
+              id={`meeting-time-${activity.id}`}
+              type="text"
+              value={activity.meetingTime || ''}
+              onChange={(e) => updateActivity(activity.id, 'meetingTime', e.target.value)}
+              placeholder="e.g., 2:00 PM, 14:00, or TBD"
+            />
+          </div>
         </div>
 
         <div className="space-y-4 pt-2">
           <h4 className="font-medium">Company Information</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1 space-y-2">
               <Label htmlFor={`company-name-${activity.id}`}>Company Name</Label>
               <Input
                 id={`company-name-${activity.id}`}
@@ -371,7 +427,7 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
                 placeholder="Enter company name"
               />
             </div>
-            <div className="space-y-2">
+            <div className="flex-1 space-y-2">
               <Label htmlFor={`company-email-${activity.id}`}>Contact Email</Label>
               <Input
                 id={`company-email-${activity.id}`}
@@ -381,7 +437,7 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
                 placeholder="contact@company.com"
               />
             </div>
-            <div className="space-y-2">
+            <div className="flex-1 space-y-2">
               <Label htmlFor={`company-phone-${activity.id}`}>Contact Phone</Label>
               <Input
                 id={`company-phone-${activity.id}`}
@@ -391,15 +447,6 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
                 placeholder="+1 (555) 123-4567"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor={`company-address-${activity.id}`}>Address</Label>
-              <Input
-                id={`company-address-${activity.id}`}
-                value={activity.companyAddress || ''}
-                onChange={(e) => updateActivity(activity.id, 'companyAddress', e.target.value)}
-                placeholder="123 Main St, City, Country"
-              />
-            </div>
           </div>
         </div>
       </CardContent>
@@ -407,11 +454,11 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
         <div className="w-full">
           <div className="space-y-2">
             {quote.groupType === 'known' ? (
-              <div className="flex justify-between items-center">
-                <div className="text-gray-500">
-                  {activity.perPerson 
-                    ? `${formatCurrency(activity.costUSD)} × ${activity.travelerCount || travelerCount} travelers`
-                    : 'Group rate'}
+                <div className="flex justify-between items-center">
+                  <div className="text-gray-500">
+                    {activity.perPerson
+                        ? `${formatCurrency(activity.costUSD)} × ${activity.travelerCount || travelerCount} travelers`
+                        : 'Group rate'}
                 </div>
                 <div className="font-medium">
                   Total: {formatCurrency(totalCost)}

@@ -211,7 +211,7 @@ export const sampleActivities: Activity[] = [
     currency: "EUR",
     exchangeRate: 1.1,
     perPerson: true,
-    notes: "Private guided tour of the Guinness Storehouse"
+    remarks: "Private guided tour of the Guinness Storehouse"
   },
   {
     id: "activity2",
@@ -224,7 +224,7 @@ export const sampleActivities: Activity[] = [
     currency: "EUR",
     exchangeRate: 1.1,
     perPerson: true,
-    notes: "Michelin-starred restaurant in Dublin"
+    remarks: "Michelin-starred restaurant in Dublin"
   },
   {
     id: "activity3",
@@ -237,7 +237,7 @@ export const sampleActivities: Activity[] = [
     currency: "EUR",
     exchangeRate: 1.1,
     perPerson: true,
-    notes: "Full day excursion to the magnificent Cliffs of Moher"
+    remarks: "Full day excursion to the magnificent Cliffs of Moher"
   },
   {
     id: "activity4",
@@ -250,7 +250,7 @@ export const sampleActivities: Activity[] = [
     currency: "GBP",
     exchangeRate: 1.3,
     perPerson: true,
-    notes: "Guided tour of historic Edinburgh Castle"
+    remarks: "Guided tour of historic Edinburgh Castle"
   },
   {
     id: "activity5",
@@ -263,7 +263,7 @@ export const sampleActivities: Activity[] = [
     currency: "GBP",
     exchangeRate: 1.3,
     perPerson: true,
-    notes: "Guided walking tour of Edinburgh's Royal Mile"
+    remarks: "Guided walking tour of Edinburgh's Royal Mile"
   },
   {
     id: "activity6",
@@ -276,7 +276,7 @@ export const sampleActivities: Activity[] = [
     currency: "GBP",
     exchangeRate: 1.3,
     perPerson: true,
-    notes: "Round of golf at the famous St Andrews Links"
+    remarks: "Round of golf at the famous St Andrews Links"
   }
 ];
 
