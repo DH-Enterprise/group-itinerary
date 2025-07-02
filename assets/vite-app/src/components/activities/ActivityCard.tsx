@@ -215,14 +215,6 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
             <Label htmlFor={`activity-exchange-rate-${activity.id}`}>
               <div className="flex items-center justify-between">
                 <span>Exchange Rate to USD</span>
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 px-2 text-xs text-muted-foreground"
-                    onClick={() => updateActivity(activity.id, 'exchangeRate', 1)}
-                >
-                  <RefreshCw className="h-3 w-3 mr-1"/> Reset
-                </Button>
               </div>
             </Label>
             <Input
@@ -396,6 +388,16 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor={`meeting-address-${activity.id}`}>Meeting Address</Label>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button type="button" className="focus:outline-none">
+                  <Info className="h-4 w-4 text-muted-foreground hover:text-foreground transition-colors" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>This will be shown on blue page</p>
+              </TooltipContent>
+            </Tooltip>
             <Input
               id={`meeting-address-${activity.id}`}
               value={activity.meetingAddress || ''}
@@ -405,6 +407,16 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
           </div>
           <div className="space-y-2">
             <Label htmlFor={`meeting-time-${activity.id}`}>Meeting Time</Label>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button type="button" className="focus:outline-none">
+                  <Info className="h-4 w-4 text-muted-foreground hover:text-foreground transition-colors" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>This will be shown on blue page</p>
+              </TooltipContent>
+            </Tooltip>
             <Input
               id={`meeting-time-${activity.id}`}
               type="text"
