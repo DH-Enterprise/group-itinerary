@@ -79,13 +79,30 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
   // Get only the selected group ranges for display
   const selectedGroupRanges = quote.groupRanges.filter(range => range.selected);
 
+  // Calculate the base cost based on perPerson setting
+  const getBaseCost = () => {
+    const baseCost = activity.costUSD || 0;
+    if (!activity.perPerson) return baseCost;
+    
+    if (quote.groupType === 'known') {
+      const count = activity.travelerCount !== undefined ? activity.travelerCount : travelerCount;
+      return baseCost * count;
+    } else {
+      // For speculative groups, use the minimum of the selected ranges
+      const selectedRange = quote.groupRanges.find(range => range.selected);
+      return selectedRange ? baseCost * selectedRange.min : baseCost;
+    }
+  };
+
   // Calculate traveler counts and costs for each selected group range
   const getTravelerCounts = () => {
+    const baseCost = activity.costUSD || 0;
+    
     if (quote.groupType === 'known') {
       const count = activity.travelerCount !== undefined ? activity.travelerCount : travelerCount;
       return [{
         count,
-        cost: activity.perPerson ? activity.costUSD * count : activity.costUSD,
+        cost: activity.perPerson ? baseCost * count : baseCost,
         label: `${count} travelers`
       }];
     } else {
@@ -99,18 +116,25 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
             rangeId,
             label: `${range.min}-${range.max} travelers`,
             count,
-            cost: activity.perPerson ? activity.costUSD * count : activity.costUSD
+            cost: activity.perPerson ? baseCost * count : baseCost
           };
         })
         .filter(Boolean);
     }
   };
 
-  // Only calculate costs if there are selected group ranges
+  // Calculate the base total cost
+  const baseTotalCost = getBaseCost();
+  
+  // Only calculate detailed traveler counts if there are selected group ranges
   const travelerCounts = quote.groupType === 'speculative' && selectedGroupRanges.length === 0
     ? []
     : getTravelerCounts();
-  const totalCost = travelerCounts.reduce((sum, item) => sum + (item?.cost || 0), 0);
+  
+  // Use the base total cost if we're not showing detailed traveler counts
+  const totalCost = travelerCounts.length > 0 
+    ? travelerCounts.reduce((sum, item) => sum + (item?.cost || 0), 0)
+    : baseTotalCost;
 
   return (
     <Card>
@@ -128,8 +152,10 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
         </div>
         <CardDescription>
           {format(activity.date, 'EEEE, MMMM d, yyyy')} • {formatCurrency(totalCost)}
-          {activity.perPerson && quote.groupType === 'known' && (
-            ` • ${activity.travelerCount || travelerCount} travelers`
+          {activity.perPerson && (
+            quote.groupType === 'known' 
+              ? ` • ${activity.travelerCount || travelerCount} travelers`
+              : selectedGroupRanges.map(range => ` • ${range.min}-${range.max} travelers`).join('')
           )}
         </CardDescription>
       </CardHeader>
@@ -267,7 +293,15 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
               <Switch
                   id={`activity-per-person-${activity.id}`}
                   checked={activity.perPerson}
-                  onCheckedChange={(checked) => updateActivity(activity.id, 'perPerson', checked)}
+                  onCheckedChange={(checked) => {
+                    // Update the perPerson flag
+                    updateActivity(activity.id, 'perPerson', checked);
+                    
+                    // If enabling per-person, ensure we have a traveler count
+                    if (checked && activity.travelerCount === undefined) {
+                      updateActivity(activity.id, 'travelerCount', travelerCount);
+                    }
+                  }}
               />
               <Label htmlFor={`activity-per-person-${activity.id}`} className="text-sm">
                 Price is per person
