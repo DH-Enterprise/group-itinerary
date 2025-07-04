@@ -46,12 +46,16 @@ const RoomCategoryRow = ({ category, onUpdate, onRemove }: RoomCategoryRowProps)
   return (
     <div className="grid grid-cols-1 md:grid-cols-7 gap-3 p-3 bg-gray-50 rounded-md">
       <div>
-        <Label htmlFor={`category-name-${category.id}`} className="text-xs">Room Type</Label>
+        <div className="flex items-center">
+          <Label htmlFor={`category-name-${category.id}`} className="text-xs">Room Type</Label>
+          <span className="text-red-500 ml-1">*</span>
+        </div>
         <select
           id={`category-name-${category.id}`}
           value={category.name}
           onChange={(e) => onUpdate(category.id, 'name', e.target.value)}
-          className="mt-1 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          required
+          className={`mt-1 flex h-10 w-full rounded-md border ${!category.name ? 'border-red-500' : 'border-input'} bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50`}
         >
           <option value="">Select room type</option>
           <option value="Single Room">Single Room (1 person)</option>
@@ -59,6 +63,9 @@ const RoomCategoryRow = ({ category, onUpdate, onRemove }: RoomCategoryRowProps)
           <option value="Triple Room">Triple Room (3 people)</option>
           <option value="Quad Room">Quad Room (4 people)</option>
         </select>
+        {!category.name && (
+          <p className="mt-1 text-xs text-red-500">Room type is required</p>
+        )}
       </div>
       
       <div>
