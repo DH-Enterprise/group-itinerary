@@ -35,10 +35,12 @@ export const togglePrimaryHotel = (hotels: Hotel[], hotelId: string, cityId: str
 };
 
 export const addRoomCategory = (hotels: Hotel[], hotelId: string): Hotel[] => {
+  const defaultRoomName = 'Standard';
   const newCategory: RoomCategory = {
     id: generateUniqueId(),
-    name: 'Double Room', // Default to Double Room
-    category: '',
+    name: defaultRoomName,
+    type: 'Double', // Default type
+    category: defaultRoomName, // Initialize category with the same value as name
     rate: 0,
     quantity: 1
   };
@@ -63,7 +65,14 @@ export const updateRoomCategory = (
           ...hotel,
           roomCategories: hotel.roomCategories.map(category =>
             category.id === categoryId
-              ? { ...category, [field]: field === 'rate' || field === 'quantity' ? Number(value) : value }
+              ? { 
+                  ...category, 
+                  // When updating the name, also update the category field if it's empty
+                  ...(field === 'name' && !category.category ? { category: value } : {}),
+                  // When updating the category, also update the type if it's empty
+                  ...(field === 'category' && !category.type ? { type: value.toLowerCase() } : {}),
+                  [field]: field === 'rate' || field === 'quantity' ? Number(value) : value 
+                }
               : category
           )
         }
