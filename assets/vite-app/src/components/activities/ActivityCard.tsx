@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { format } from 'date-fns';
-import { Trash, Users, CalendarIcon, RefreshCw, Check, Info } from 'lucide-react';
+import { Trash, Users, CalendarIcon, Check, Info } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useQuote } from '@/context/QuoteContext';
 import { Input } from '@/components/ui/input';
@@ -173,7 +173,7 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
           {activity.perPerson && (
             quote.groupType === 'known' 
               ? ` • ${activity.travelerCount || travelerCount} travelers`
-              : selectedGroupRanges.map(range => ` • ${range.min}-${range.max} travelers`).join('')
+              : selectedGroupRanges.map(range => ` • ${range.min}-${range.max} travelers`).join(', ')
           )}
         </CardDescription>
       </CardHeader>

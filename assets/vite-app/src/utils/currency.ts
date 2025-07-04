@@ -29,7 +29,7 @@ export const updateActivityCosts = (
     };
   } else if (field === 'costUSD') {
     return {
-      cost: parseFloat((currentCostUSD / exchangeRate).toFixed(2)),
+      cost: parseFloat((currentCostUSD / (exchangeRate || 1)).toFixed(2)),
       costUSD: currentCostUSD
     };
   } else {
