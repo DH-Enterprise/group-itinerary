@@ -109,7 +109,19 @@ export const QuoteProvider = ({ children }: QuoteProviderProps) => {
   };
 
   const loadSampleQuote = () => {
-    setQuote(sampleQuote);
+    // Clone the sample quote to avoid mutating the original
+    const quoteWithTravelerCounts = {
+      ...sampleQuote,
+      activities: sampleQuote.activities.map(activity => ({
+        ...activity,
+        // Initialize travelerCount if it's a per-person activity and not already set
+        ...(activity.perPerson && !activity.travelerCount && {
+          travelerCount: sampleQuote.travelerCount || 1
+        })
+      }))
+    };
+    
+    setQuote(quoteWithTravelerCounts);
     setPhaseStatuses({
       initialization: PhaseStatus.COMPLETED,
       accommodations: PhaseStatus.COMPLETED,
