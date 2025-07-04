@@ -17,6 +17,22 @@ import { formatCurrency } from '@/utils/quoteUtils';
 import { cn } from '@/lib/utils';
 import { useActivityCosts } from '@/hooks/useActivityCosts';
 
+interface BaseTravelerCost {
+  count: number;
+  cost: number;
+  label: string;
+}
+
+interface KnownGroupTravelerCost extends BaseTravelerCost {
+  // No additional fields for known groups
+}
+
+interface SpeculativeGroupTravelerCost extends BaseTravelerCost {
+  rangeId: string;
+}
+
+type TravelerCostBreakdown = KnownGroupTravelerCost | SpeculativeGroupTravelerCost;
+
 interface ActivityCardProps {
   activity: Activity;
   updateActivity: (id: string, field: string, value: any) => void;
@@ -71,8 +87,8 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
   // Get only the selected group ranges from quote context
   const selectedRanges = quote.groupRanges
     .filter(range => range.selected)
-    .reduce((acc, range) => ({
-      ...acc,
+    .reduce((previousStepValue, range) => ({
+      ...previousStepValue,
       [range.id]: true
     }), {});
 
@@ -80,7 +96,7 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
   const selectedGroupRanges = quote.groupRanges.filter(range => range.selected);
 
   // Calculate the base cost based on perPerson setting
-  const getBaseCost = () => {
+  const getTotalCostUsd = () => {
     const baseCost = activity.costUSD || 0;
     if (!activity.perPerson) return baseCost;
     
@@ -95,16 +111,17 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
   };
 
   // Calculate traveler counts and costs for each selected group range
-  const getTravelerCounts = () => {
+  const getTravelerCostBreakdown = (): TravelerCostBreakdown[] => {
     const baseCost = activity.costUSD || 0;
     
     if (quote.groupType === 'known') {
       const count = activity.travelerCount !== undefined ? activity.travelerCount : travelerCount;
-      return [{
+      const result: KnownGroupTravelerCost = {
         count,
         cost: activity.perPerson ? baseCost * count : baseCost,
         label: `${count} travelers`
-      }];
+      };
+      return [result];
     } else {
       return Object.entries(selectedRanges)
         .filter(([_, selected]) => selected)
@@ -112,29 +129,30 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
           const range = quote.groupRanges.find(r => r.id === rangeId);
           if (!range) return null;
           const count = range.min; // Use the minimum value of the range
-          return {
+          const result: SpeculativeGroupTravelerCost = {
             rangeId,
             label: `${range.min}-${range.max} travelers`,
             count,
             cost: activity.perPerson ? baseCost * count : baseCost
           };
+          return result;
         })
-        .filter(Boolean);
+        .filter((item): item is SpeculativeGroupTravelerCost => item !== null);
     }
   };
 
   // Calculate the base total cost
-  const baseTotalCost = getBaseCost();
+  const totalCostUsd = getTotalCostUsd();
   
   // Only calculate detailed traveler counts if there are selected group ranges
   const travelerCounts = quote.groupType === 'speculative' && selectedGroupRanges.length === 0
     ? []
-    : getTravelerCounts();
+    : getTravelerCostBreakdown();
   
   // Use the base total cost if we're not showing detailed traveler counts
   const totalCost = travelerCounts.length > 0 
     ? travelerCounts.reduce((sum, item) => sum + (item?.cost || 0), 0)
-    : baseTotalCost;
+    : totalCostUsd;
 
   return (
     <Card>
@@ -513,18 +531,20 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
             ) : (
               travelerCounts.length > 0 ? (
                 travelerCounts.map((item, index) => (
-                  item && (
-                    <div key={`row-${item.rangeId || index}`} className="flex justify-between items-center">
-                      <div className="text-gray-500">
-                        {activity.perPerson
-                          ? `${formatCurrency(activity.costUSD)} × ${item.count} travelers (${item.label})`
-                          : item.label}
-                      </div>
-                      <div className="font-medium">
-                        Total: {formatCurrency(item.cost || 0)}
-                      </div>
+                  <div 
+                    key={'rangeId' in item ? `row-${item.rangeId}` : `row-${index}`} 
+                    className="flex justify-between items-center"
+                  >
+                    <div className="text-gray-500">
+                      {activity.perPerson
+                        ? `${formatCurrency(activity.costUSD)} × ${item.count} travelers` + 
+                          ('rangeId' in item ? ` (${item.label})` : '')
+                        : item.label}
                     </div>
-                  )
+                    <div className="font-medium">
+                      Total: {formatCurrency(item.cost || 0)}
+                    </div>
+                  </div>
                 ))
               ) : (
                 <div className="text-gray-500">Select group sizes</div>

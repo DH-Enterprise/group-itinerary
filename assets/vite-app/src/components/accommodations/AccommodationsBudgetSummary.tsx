@@ -12,7 +12,7 @@ interface AccommodationsBudgetSummaryProps {
 const AccommodationsBudgetSummary = ({ 
   totalAccommodationCost, 
   remainingBudget,
-  quote
+  quote,
 }: AccommodationsBudgetSummaryProps) => {
   if (quote.groupType === 'speculative') {
     return (
