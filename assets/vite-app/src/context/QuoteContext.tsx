@@ -43,9 +43,33 @@ export const QuoteProvider = ({ children }: QuoteProviderProps) => {
 
   const saveQuote = async () => {
     try {
+      // Transform activities to use cityName instead of city and rename date to dateString
+      const transformedActivities = quote.activities.map(activity => {
+        const city = quote.cities.find(c => c.id === activity.city);
+        return {
+          ...activity,
+          cityName: city ? city.name : activity.city,
+          dateString: activity.date, // Rename date to dateString
+          city: undefined, // Remove the city field
+          date: undefined // Remove the date field
+        };
+      });
+
+      // Transform hotels to use cityName instead of city
+      const transformedHotels = quote.hotels.map(hotel => {
+        const city = quote.cities.find(c => c.id === hotel.city);
+        return {
+          ...hotel,
+          cityName: city ? city.name : hotel.city,
+          city: undefined // Remove the city field
+        };
+      });
+
       // Ensure agentId is included in the payload
       const payload = {
         ...quote,
+        activities: transformedActivities,
+        hotels: transformedHotels,
         agentId: quote.agentId || null,
       };
 
