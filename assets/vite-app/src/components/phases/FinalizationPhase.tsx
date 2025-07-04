@@ -36,15 +36,17 @@ const FinalizationPhase = () => {
   const handlePreviewBluePage = async () => {
     setIsLoading(true);
     try {
-      // Transform activities to use cityName instead of city and rename date to dateString
+      // Transform activities to use cityName instead of city, rename date to dateString, and costUSD to costUsd
       const transformedActivities = quote.activities.map(activity => {
         const city = quote.cities.find(c => c.id === activity.city);
         return {
           ...activity,
           cityName: city ? city.name : activity.city,
           dateString: activity.date, // Rename date to dateString
+          costUsd: activity.costUSD, // Rename costUSD to costUsd
           city: undefined, // Remove the city field
-          date: undefined // Remove the date field
+          date: undefined, // Remove the date field
+          costUSD: undefined, // Remove the costUSD field
         };
       });
 
