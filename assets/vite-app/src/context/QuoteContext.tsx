@@ -51,9 +51,6 @@ export const QuoteProvider = ({ children }: QuoteProviderProps) => {
           cityName: city ? city.name : activity.city,
           dateString: activity.date, // Rename date to dateString
           costUsd: activity.costUSD, // Rename costUSD to costUsd
-          city: undefined, // Remove the city field
-          date: undefined, // Remove the date field
-          costUSD: undefined, // Remove the costUSD field
         };
       });
 
@@ -63,7 +60,6 @@ export const QuoteProvider = ({ children }: QuoteProviderProps) => {
         return {
           ...hotel,
           cityName: city ? city.name : hotel.city,
-          city: undefined // Remove the city field
         };
       });
 

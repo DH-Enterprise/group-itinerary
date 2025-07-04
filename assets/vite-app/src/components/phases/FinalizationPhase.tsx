@@ -42,11 +42,8 @@ const FinalizationPhase = () => {
         return {
           ...activity,
           cityName: city ? city.name : activity.city,
-          dateString: activity.date, // Rename date to dateString
-          costUsd: activity.costUSD, // Rename costUSD to costUsd
-          city: undefined, // Remove the city field
-          date: undefined, // Remove the date field
-          costUSD: undefined, // Remove the costUSD field
+          dateString: activity.date,
+          costUsd: activity.costUSD,
         };
       });
 
@@ -56,7 +53,6 @@ const FinalizationPhase = () => {
         return {
           ...hotel,
           cityName: city ? city.name : hotel.city,
-          city: undefined // Remove the city field
         };
       });
 
