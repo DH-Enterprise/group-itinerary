@@ -107,9 +107,10 @@ const BasicInformation = ({
     ? Math.ceil((new Date(quote.endDate).getTime() - new Date(quote.startDate).getTime()) / (1000 * 60 * 60 * 24))
     : 0;
 
-  const isFieldInvalid = (value: any, type: 'string' | 'number' = 'string'): boolean => {
+  const isFieldInvalid = (value: any, type: 'string' | 'number' | 'travelerCount' = 'string'): boolean => {
     if (!showValidation) return false;
     if (type === 'number') return !value || isNaN(Number(value)) || Number(value) < 10;
+    if (type === 'travelerCount') return !value || isNaN(Number(value)) || Number(value) < 10;
     return !value;
   };
 
@@ -229,7 +230,7 @@ const BasicInformation = ({
 
       {quote.groupType === 'known' ? (
         <div className="space-y-2">
-          <Label htmlFor="travelerCount" className={cn(showValidation && !quote.travelerCount && 'text-destructive')}>
+          <Label htmlFor="travelerCount" className={cn(isFieldInvalid(quote.travelerCount, 'travelerCount') && 'text-destructive')}>
             Number of Travelers *
           </Label>
           <Input
@@ -239,10 +240,13 @@ const BasicInformation = ({
             min="10"
             value={quote.travelerCount || ''}
             onChange={onNumberChange}
-            className={cn(showValidation && !quote.travelerCount && 'border-destructive')}
+            className={cn(isFieldInvalid(quote.travelerCount, 'travelerCount') && 'border-destructive')}
           />
-          {showValidation && !quote.travelerCount && (
-            <p className="text-sm text-destructive">Number of travelers is required (minimum 10)</p>
+          {isFieldInvalid(quote.travelerCount, 'travelerCount') && (
+            <div className="flex items-center gap-2 text-destructive text-sm mt-1">
+              <AlertCircle className="h-4 w-4" />
+              <span>Minimum 10 travelers required for known groups</span>
+            </div>
           )}
         </div>
       ) : (

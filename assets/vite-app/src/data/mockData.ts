@@ -207,8 +207,11 @@ export const sampleActivities: Activity[] = [
     city: "city1",
     type: "tour",
     cost: 25,
+    costUSD: 27.50,
+    currency: "EUR",
+    exchangeRate: 1.1,
     perPerson: true,
-    notes: "Private guided tour of the Guinness Storehouse"
+    remarks: "Private guided tour of the Guinness Storehouse"
   },
   {
     id: "activity2",
@@ -217,8 +220,11 @@ export const sampleActivities: Activity[] = [
     city: "city1",
     type: "restaurant",
     cost: 120,
+    costUSD: 132.00,
+    currency: "EUR",
+    exchangeRate: 1.1,
     perPerson: true,
-    notes: "Michelin-starred restaurant in Dublin"
+    remarks: "Michelin-starred restaurant in Dublin"
   },
   {
     id: "activity3",
@@ -227,8 +233,11 @@ export const sampleActivities: Activity[] = [
     city: "city2",
     type: "tour",
     cost: 85,
+    costUSD: 93.50,
+    currency: "EUR",
+    exchangeRate: 1.1,
     perPerson: true,
-    notes: "Full day excursion to the magnificent Cliffs of Moher"
+    remarks: "Full day excursion to the magnificent Cliffs of Moher"
   },
   {
     id: "activity4",
@@ -237,8 +246,11 @@ export const sampleActivities: Activity[] = [
     city: "city3",
     type: "tour",
     cost: 35,
+    costUSD: 45.50,
+    currency: "GBP",
+    exchangeRate: 1.3,
     perPerson: true,
-    notes: "Guided tour of historic Edinburgh Castle"
+    remarks: "Guided tour of historic Edinburgh Castle"
   },
   {
     id: "activity5",
@@ -247,8 +259,11 @@ export const sampleActivities: Activity[] = [
     city: "city3",
     type: "tour",
     cost: 15,
+    costUSD: 19.50,
+    currency: "GBP",
+    exchangeRate: 1.3,
     perPerson: true,
-    notes: "Guided walking tour of Edinburgh's Royal Mile"
+    remarks: "Guided walking tour of Edinburgh's Royal Mile"
   },
   {
     id: "activity6",
@@ -257,8 +272,11 @@ export const sampleActivities: Activity[] = [
     city: "city4",
     type: "golf",
     cost: 250,
+    costUSD: 325.00,
+    currency: "GBP",
+    exchangeRate: 1.3,
     perPerson: true,
-    notes: "Round of golf at the famous St Andrews Links"
+    remarks: "Round of golf at the famous St Andrews Links"
   }
 ];
 

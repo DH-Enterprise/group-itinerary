@@ -14,6 +14,17 @@ const TransportBudgetSummary: React.FC<TransportBudgetSummaryProps> = ({ quote }
   const totalCost = accommodationCost + activityCost + transportationCost;
   const remainingBudget = quote.budget - totalCost;
 
+  if (quote.groupType === 'speculative') {
+    return (
+      <div className="text-right">
+        <p className="text-sm text-gray-500">Total Budget</p>
+        <p className="text-xl font-bold text-travel-blue-dark">
+          {formatCurrency(quote.budget)}
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="text-right space-y-1">
       <div>
