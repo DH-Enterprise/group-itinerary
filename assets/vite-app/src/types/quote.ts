@@ -9,6 +9,7 @@ export interface City {
 export interface RoomCategory {
   id: string;
   name: string;
+  type: string;
   category?: string;
   rate: number;
   quantity: number;

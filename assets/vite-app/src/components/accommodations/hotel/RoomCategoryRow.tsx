@@ -50,7 +50,13 @@ const RoomCategoryRow = ({ category, onUpdate, onRemove }: RoomCategoryRowProps)
         <select
           id={`category-name-${category.id}`}
           value={category.name}
-          onChange={(e) => onUpdate(category.id, 'name', e.target.value)}
+          onChange={(e) => {
+            // Update both name and type when room type changes
+            const selectedName = e.target.value;
+            const selectedType = selectedName.split(' ')[0]; // e.g., 'Single Room' -> 'Single'
+            onUpdate(category.id, 'name', selectedName);
+            onUpdate(category.id, 'type', selectedType);
+          }}
           className="mt-1 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
         >
           <option value="">Select room type</option>
