@@ -47,11 +47,10 @@ const RoomCategoryRow = ({ category, onUpdate, onRemove }: RoomCategoryRowProps)
     <div className="grid grid-cols-1 md:grid-cols-7 gap-3 p-3 bg-gray-50 rounded-md">
       <div>
         <div className="flex items-center">
-          <Label htmlFor={`category-name-${category.id}`} className="text-xs">Room Type</Label>
-          <span className="text-red-500 ml-1">*</span>
+          <Label htmlFor={`category-name-${category.id}`} className="text-xs">Room Type *</Label>
         </div>
-        <select
-          id={`category-name-${category.id}`}
+          <select
+              id={`category-name-${category.id}`}
           value={category.name}
           required
           className={`mt-1 flex h-10 w-full rounded-md border ${!category.name ? 'border-red-500' : 'border-input'} bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50`}
