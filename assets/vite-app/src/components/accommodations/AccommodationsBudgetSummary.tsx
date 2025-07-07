@@ -1,16 +1,30 @@
 
 import React from 'react';
 import { formatCurrency } from '@/utils/quoteUtils';
+import { Quote } from '@/types/quote';
 
 interface AccommodationsBudgetSummaryProps {
   totalAccommodationCost: number;
   remainingBudget: number;
+  quote: Quote;
 }
 
 const AccommodationsBudgetSummary = ({ 
   totalAccommodationCost, 
-  remainingBudget 
+  remainingBudget,
+  quote,
 }: AccommodationsBudgetSummaryProps) => {
+  if (quote.groupType === 'speculative') {
+    return (
+      <div className="text-right">
+        <p className="text-sm text-gray-500">Total Budget</p>
+        <p className="text-xl font-bold text-travel-blue-dark">
+          {formatCurrency(quote.budget)}
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="text-right space-y-1">
       <div>

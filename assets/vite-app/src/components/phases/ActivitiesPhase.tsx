@@ -86,18 +86,27 @@ const ActivitiesPhase = () => {
     <div className="space-y-6 animate-fade-in">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold text-travel-blue-dark">Activities & Tours</h2>
-        <div className="text-right space-y-1">
-          <div>
-            <p className="text-sm text-gray-500">Total Activity Cost</p>
-            <p className="text-xl font-bold text-travel-blue-dark">{formatCurrency(activityCost)}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Client's Remaining Budget</p>
-            <p className={`text-xl font-bold ${remainingBudget < 0 ? 'text-red-500' : 'text-green-500'}`}>
-              {formatCurrency(remainingBudget)}
+        {quote.groupType === 'speculative' ? (
+          <div className="text-right">
+            <p className="text-sm text-gray-500">Total Budget</p>
+            <p className="text-xl font-bold text-travel-blue-dark">
+              {formatCurrency(quote.budget)}
             </p>
           </div>
-        </div>
+        ) : (
+          <div className="text-right space-y-1">
+            <div>
+              <p className="text-sm text-gray-500">Total Activity Cost</p>
+              <p className="text-xl font-bold text-travel-blue-dark">{formatCurrency(activityCost)}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Client's Remaining Budget</p>
+              <p className={`text-xl font-bold ${remainingBudget < 0 ? 'text-red-500' : 'text-green-500'}`}>
+                {formatCurrency(remainingBudget)}
+              </p>
+            </div>
+          </div>
+        )}
       </div>
       
       <p className="text-gray-600">Add activities, tours, and dining experiences to each day of the itinerary.</p>

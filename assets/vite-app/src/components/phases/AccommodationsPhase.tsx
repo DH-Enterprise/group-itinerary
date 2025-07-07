@@ -130,6 +130,7 @@ const AccommodationsPhase = () => {
         <AccommodationsBudgetSummary 
           totalAccommodationCost={totalAccommodationCost}
           remainingBudget={remainingBudget}
+          quote={quote}
         />
       </div>
       <p className="text-gray-600">Select and configure accommodations for each city in the itinerary.</p>

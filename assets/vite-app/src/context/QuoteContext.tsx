@@ -43,9 +43,31 @@ export const QuoteProvider = ({ children }: QuoteProviderProps) => {
 
   const saveQuote = async () => {
     try {
+      // Transform activities to use cityName instead of city, rename date to dateString, and costUSD to costUsd
+      const transformedActivities = quote.activities.map(activity => {
+        const city = quote.cities.find(c => c.id === activity.city);
+        return {
+          ...activity,
+          cityName: city ? city.name : activity.city,
+          dateString: activity.date, // Rename date to dateString
+          costUsd: activity.costUSD, // Rename costUSD to costUsd
+        };
+      });
+
+      // Transform hotels to use cityName instead of city
+      const transformedHotels = quote.hotels.map(hotel => {
+        const city = quote.cities.find(c => c.id === hotel.city);
+        return {
+          ...hotel,
+          cityName: city ? city.name : hotel.city,
+        };
+      });
+
       // Ensure agentId is included in the payload
       const payload = {
         ...quote,
+        activities: transformedActivities,
+        hotels: transformedHotels,
         agentId: quote.agentId || null,
       };
 
@@ -83,7 +105,19 @@ export const QuoteProvider = ({ children }: QuoteProviderProps) => {
   };
 
   const loadSampleQuote = () => {
-    setQuote(sampleQuote);
+    // Clone the sample quote to avoid mutating the original
+    const quoteWithTravelerCounts = {
+      ...sampleQuote,
+      activities: sampleQuote.activities.map(activity => ({
+        ...activity,
+        // Initialize travelerCount if it's a per-person activity and not already set
+        ...(activity.perPerson && !activity.travelerCount && {
+          travelerCount: sampleQuote.travelerCount || 1
+        })
+      }))
+    };
+    
+    setQuote(quoteWithTravelerCounts);
     setPhaseStatuses({
       initialization: PhaseStatus.COMPLETED,
       accommodations: PhaseStatus.COMPLETED,

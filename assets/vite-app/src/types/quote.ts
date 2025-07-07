@@ -39,9 +39,18 @@ export interface Activity {
   city: string;
   type: 'tour' | 'restaurant' | 'golf' | 'other';
   cost: number;
+  costUSD: number; // Calculated field: cost * exchangeRate
+  currency: 'EUR' | 'GBP' | 'USD';
+  exchangeRate: number; // Rate to convert to USD
   perPerson: boolean;
-  notes: string;
+  remarks: string;
+  internalNotes?: string;
   travelerCount?: number; // New optional property
+  companyName?: string;
+  companyContactEmail?: string;
+  companyContactPhone?: string;
+  meetingAddress?: string;
+  meetingTime?: string;
 }
 
 export interface CoachExtra {

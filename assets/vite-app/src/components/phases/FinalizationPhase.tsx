@@ -36,9 +36,31 @@ const FinalizationPhase = () => {
   const handlePreviewBluePage = async () => {
     setIsLoading(true);
     try {
+      // Transform activities to use cityName instead of city, rename date to dateString, and costUSD to costUsd
+      const transformedActivities = quote.activities.map(activity => {
+        const city = quote.cities.find(c => c.id === activity.city);
+        return {
+          ...activity,
+          cityName: city ? city.name : activity.city,
+          dateString: activity.date,
+          costUsd: activity.costUSD,
+        };
+      });
+
+      // Transform hotels to use cityName instead of city
+      const transformedHotels = quote.hotels.map(hotel => {
+        const city = quote.cities.find(c => c.id === hotel.city);
+        return {
+          ...hotel,
+          cityName: city ? city.name : hotel.city,
+        };
+      });
+
       // Ensure agentId is included in the payload
       const payload = {
         ...quote,
+        activities: transformedActivities,
+        hotels: transformedHotels,
         agentId: quote.agentId || null,
       };
 
