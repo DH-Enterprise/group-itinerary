@@ -1,7 +1,7 @@
-
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { Quote, PhaseStatus } from '@/types/quote';
 import { emptyQuote, sampleQuote } from '@/data/mockData';
+import { formatLocalDate } from '@/utils/dateUtils';
 import { toast } from '@/components/ui/use-toast';
 
 interface QuoteContextType {
@@ -43,16 +43,30 @@ export const QuoteProvider = ({ children }: QuoteProviderProps) => {
 
   const saveQuote = async () => {
     try {
-      // Transform activities to use cityName instead of city, rename date to dateString, and costUSD to costUsd
+      // Format city dates as Y-m-d strings in local timezone
+      const formattedCities = quote.cities.map(city => ({
+        ...city,
+        checkIn: city.checkIn ? formatLocalDate(city.checkIn) : city.checkIn,
+        checkOut: city.checkOut ? formatLocalDate(city.checkOut) : city.checkOut,
+      }));
+
+      // Transform activities to use cityName instead of city, format date as Y-m-d, and costUSD to costUsd
       const transformedActivities = quote.activities.map(activity => {
         const city = quote.cities.find(c => c.id === activity.city);
+        const date = activity.date ? new Date(activity.date) : null;
         return {
           ...activity,
           cityName: city ? city.name : activity.city,
-          dateString: activity.date, // Rename date to dateString
-          costUsd: activity.costUSD, // Rename costUSD to costUsd
+          dateString: date ? formatLocalDate(date) : '',
+          costUsd: activity.costUSD,
         };
       });
+
+      // Transform transportation dates to Y-m-d strings in local timezone
+      const transformedTransportation = quote.transportation.map(transport => ({
+        ...transport,
+        date: transport.date ? formatLocalDate(transport.date) : transport.date,
+      }));
 
       // Transform hotels to use cityName instead of city
       const transformedHotels = quote.hotels.map(hotel => {
@@ -63,10 +77,18 @@ export const QuoteProvider = ({ children }: QuoteProviderProps) => {
         };
       });
 
-      // Ensure agentId is included in the payload
+      // Format startDate and endDate as Y-m-d strings in local timezone
+      const formattedStartDate = quote.startDate ? formatLocalDate(quote.startDate) : '';
+      const formattedEndDate = quote.endDate ? formatLocalDate(quote.endDate) : '';
+
+      // Create payload with all formatted dates
       const payload = {
         ...quote,
+        startDate: formattedStartDate,
+        endDate: formattedEndDate,
+        cities: formattedCities,
         activities: transformedActivities,
+        transportation: transformedTransportation,
         hotels: transformedHotels,
         agentId: quote.agentId || null,
       };

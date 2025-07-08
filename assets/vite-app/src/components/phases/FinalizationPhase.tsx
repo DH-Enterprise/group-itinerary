@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Download, FileText, Printer, Send, Check, X, Eye, CalendarDays, Hotel, Bus, CircleDollarSign, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
+import { formatLocalDate } from '@/utils/dateUtils';
 import { toast } from '@/components/ui/use-toast';
 
 const FinalizationPhase = () => {
@@ -36,16 +37,30 @@ const FinalizationPhase = () => {
   const handlePreviewBluePage = async () => {
     setIsLoading(true);
     try {
-      // Transform activities to use cityName instead of city, rename date to dateString, and costUSD to costUsd
+      // Format city dates as Y-m-d strings in local timezone
+      const formattedCities = quote.cities.map(city => ({
+        ...city,
+        checkIn: city.checkIn ? formatLocalDate(city.checkIn) : city.checkIn,
+        checkOut: city.checkOut ? formatLocalDate(city.checkOut) : city.checkOut,
+      }));
+
+      // Transform activities to use cityName instead of city, format date as Y-m-d, and costUSD to costUsd
       const transformedActivities = quote.activities.map(activity => {
         const city = quote.cities.find(c => c.id === activity.city);
+        const date = activity.date ? new Date(activity.date) : null;
         return {
           ...activity,
           cityName: city ? city.name : activity.city,
-          dateString: activity.date,
+          dateString: date ? formatLocalDate(date) : '',
           costUsd: activity.costUSD,
         };
       });
+
+      // Transform transportation dates to Y-m-d strings in local timezone
+      const transformedTransportation = quote.transportation.map(transport => ({
+        ...transport,
+        date: transport.date ? formatLocalDate(transport.date) : transport.date,
+      }));
 
       // Transform hotels to use cityName instead of city
       const transformedHotels = quote.hotels.map(hotel => {
@@ -56,10 +71,18 @@ const FinalizationPhase = () => {
         };
       });
 
-      // Ensure agentId is included in the payload
+      // Format startDate and endDate as Y-m-d strings in local timezone
+      const formattedStartDate = quote.startDate ? formatLocalDate(quote.startDate) : '';
+      const formattedEndDate = quote.endDate ? formatLocalDate(quote.endDate) : '';
+
+      // Create payload with all formatted dates
       const payload = {
         ...quote,
+        startDate: formattedStartDate,
+        endDate: formattedEndDate,
+        cities: formattedCities,
         activities: transformedActivities,
+        transportation: transformedTransportation,
         hotels: transformedHotels,
         agentId: quote.agentId || null,
       };
