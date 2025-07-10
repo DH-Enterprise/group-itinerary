@@ -12,13 +12,13 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 #[Route('/api/agents')]
 final class AgentController extends AbstractController
 {
-    private string $adminBaseUrl;
+    private string $orionUrl;
     private string $adminApiToken;
     private string $basicAuthCredentials;
 
     public function __construct(ParameterBagInterface $parameterBag)
     {
-        $this->adminBaseUrl = rtrim($parameterBag->get('app.admin_base_url'), '/');
+        $this->orionUrl = rtrim($parameterBag->get('app.orion_url'), '/');
         $this->adminApiToken = $parameterBag->get('app.admin_api_token');
         $this->basicAuthCredentials = $parameterBag->get('app.basic_auth_credentials');
     }
@@ -32,7 +32,7 @@ final class AgentController extends AbstractController
             return $this->json([]);
         }
 
-        $targetUrl = $this->adminBaseUrl . '/json/agent';
+        $targetUrl = $this->orionUrl . '/admin/json/agent';
 
         $authHeaders = array_filter(['Basic' => $this->basicAuthCredentials, 'Bearer' => $this->adminApiToken]);
         $authHeader = '';

@@ -15,6 +15,7 @@ final class QuoteController extends AbstractController
         private EntityManagerInterface $entityManager,
         private string $scheduleBaseUrl
     ) {
+        $this->scheduleBaseUrl = rtrim($this->scheduleBaseUrl, '/');
     }
 
     #[Route('/api/quotes', name: 'app_save_quote', methods: ['POST'])]
@@ -30,8 +31,9 @@ final class QuoteController extends AbstractController
 
         return new JsonResponse([
             'status' => 'success',
-            'url' => rtrim($this->scheduleBaseUrl, '/') .
-                '/fit/group-schedule?' . http_build_query(['quoteData' => $encodedQuoteData])
+            'url' => $this->scheduleBaseUrl . '/fit/group-schedule?' . http_build_query([
+                'quoteData' => $encodedQuoteData,
+            ])
         ]);
     }
 
