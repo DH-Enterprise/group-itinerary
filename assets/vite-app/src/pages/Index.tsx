@@ -10,6 +10,15 @@ import ItineraryPhase from '@/components/phases/ItineraryPhase';
 import FinalizationPhase from '@/components/phases/FinalizationPhase';
 import { useQuote } from '@/context/QuoteContext';
 
+type ExchangeRate = {
+  code: string;
+  rate: number;
+};
+
+interface IndexProps {
+  exchangeRates: ExchangeRate[];
+}
+
 const QuoteContent = () => {
   const { currentPhase } = useQuote();
 
@@ -40,14 +49,23 @@ const QuoteContent = () => {
   );
 };
 
-const Index = () => {
+const Index: React.FC<IndexProps> = ({ exchangeRates }) => {
   return (
-    <QuoteProvider>
+    <QuoteProvider exchangeRates={exchangeRates}>
       <MainLayout>
         <QuoteContent />
       </MainLayout>
     </QuoteProvider>
   );
+};
+
+// Default props in case they're not provided
+Index.defaultProps = {
+  exchangeRates: [
+    { code: 'USD', rate: 1.0 },
+    { code: 'EUR', rate: 0.85 },
+    { code: 'GBP', rate: 0.75 }
+  ]
 };
 
 export default Index;

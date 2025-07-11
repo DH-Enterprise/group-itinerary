@@ -33,12 +33,17 @@ export const calculateTotalAccommodationCost = (hotels: Hotel[]): number => {
 
 export const calculateTotalActivityCost = (activities: Activity[]): number => {
   return activities.reduce((total, activity) => {
-    if (activity.perPerson) {
-      // Use activity-specific traveler count if available, otherwise use default (shouldn't happen)
-      const travelerCount = activity.travelerCount !== undefined ? activity.travelerCount : 1;
-      return total + activity.cost * travelerCount;
-    }
-    return total + activity.cost;
+    // Calculate base cost (in activity's currency)
+    let baseCost = activity.perPerson 
+      ? activity.cost * (activity.travelerCount || 1)
+      : activity.cost;
+      
+    // Convert to USD using the exchange rate if available, otherwise use the cost as is
+    const costInUSD = activity.exchangeRate 
+      ? baseCost * activity.exchangeRate 
+      : baseCost;
+      
+    return total + costInUSD;
   }, 0);
 };
 

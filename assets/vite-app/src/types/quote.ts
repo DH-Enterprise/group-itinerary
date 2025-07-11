@@ -148,6 +148,11 @@ export interface Quote {
   updatedAt: Date;
   status: 'draft' | 'pending' | 'approved' | 'sent' | 'accepted' | 'rejected';
   phase: 'initialization' | 'accommodations' | 'activities' | 'transportation' | 'itinerary' | 'finalization';
+  // Exchange rates are provided by the backend via window.exchangeRates
+  exchangeRates?: Array<{
+    code: string;
+    rate: number;
+  }>;
 }
 
 export interface User {

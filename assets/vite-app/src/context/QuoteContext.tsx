@@ -4,6 +4,11 @@ import { emptyQuote, sampleQuote } from '@/data/mockData';
 import { formatLocalDate } from '@/utils/dateUtils';
 import { toast } from '@/components/ui/use-toast';
 
+type ExchangeRate = {
+  code: string;
+  rate: number;
+};
+
 interface QuoteContextType {
   quote: Quote;
   setQuote: React.Dispatch<React.SetStateAction<Quote>>;
@@ -14,15 +19,32 @@ interface QuoteContextType {
   saveQuote: () => void;
   loadSampleQuote: () => void;
   createNewQuote: () => void;
+  exchangeRates: ExchangeRate[];
 }
 
 const QuoteContext = createContext<QuoteContextType | undefined>(undefined);
 
 interface QuoteProviderProps {
   children: ReactNode;
+  exchangeRates?: ExchangeRate[];
 }
 
-export const QuoteProvider = ({ children }: QuoteProviderProps) => {
+// Get exchange rates from window.exchangeRates or use default values
+const getExchangeRates = (): ExchangeRate[] => {
+  // Try to get rates from window.exchangeRates first
+  if (typeof window !== 'undefined' && (window as any).exchangeRates) {
+    return (window as any).exchangeRates;
+  }
+  
+  // Fallback to default rates if not available
+  return [
+    { code: 'USD', rate: 1.0 },
+    { code: 'EUR', rate: 0.85 },
+    { code: 'GBP', rate: 0.75 }
+  ];
+};
+
+export const QuoteProvider = ({ children, exchangeRates = getExchangeRates() }: QuoteProviderProps) => {
   const [quote, setQuote] = useState<Quote>(emptyQuote);
   const [currentPhase, setCurrentPhase] = useState<string>('initialization');
   const [phaseStatuses, setPhaseStatuses] = useState<Record<string, PhaseStatus>>({
@@ -192,6 +214,7 @@ export const QuoteProvider = ({ children }: QuoteProviderProps) => {
         saveQuote,
         loadSampleQuote,
         createNewQuote,
+        exchangeRates,
       }}
     >
       {children}

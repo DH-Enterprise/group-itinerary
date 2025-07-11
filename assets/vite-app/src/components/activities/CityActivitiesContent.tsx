@@ -8,6 +8,11 @@ import { Activity, City } from '@/types/quote';
 import { formatCurrency } from '@/utils/quoteUtils';
 import DailyActivitiesTab from './DailyActivitiesTab';
 
+export type ExchangeRate = {
+  code: string;
+  rate: number;
+};
+
 interface CityActivitiesContentProps {
   city: City;
   activities: Activity[];
@@ -16,6 +21,7 @@ interface CityActivitiesContentProps {
   updateActivity: (id: string, field: string, value: any) => void;
   removeActivity: (id: string) => void;
   calculateActivityTotalCost: (activity: Activity) => number;
+  exchangeRates: ExchangeRate[];
 }
 
 const CityActivitiesContent = ({ 
@@ -25,7 +31,8 @@ const CityActivitiesContent = ({
   addActivity, 
   updateActivity, 
   removeActivity,
-  calculateActivityTotalCost
+  calculateActivityTotalCost,
+  exchangeRates
 }: CityActivitiesContentProps) => {
   const [activeDay, setActiveDay] = useState<string>('all');
 
@@ -110,6 +117,7 @@ const CityActivitiesContent = ({
             removeActivity={removeActivity}
             travelerCount={travelerCount}
             isAllDaysView={true}
+            exchangeRates={exchangeRates}
           />
         </TabsContent>
         
@@ -135,6 +143,7 @@ const CityActivitiesContent = ({
               updateActivity={updateActivity}
               removeActivity={removeActivity}
               travelerCount={travelerCount}
+              exchangeRates={exchangeRates}
             />
           </TabsContent>
         ))}

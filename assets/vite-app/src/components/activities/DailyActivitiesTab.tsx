@@ -6,6 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Activity } from '@/types/quote';
 import ActivityCard from './ActivityCard';
 
+type ExchangeRate = {
+  code: string;
+  rate: number;
+};
+
 interface DailyActivitiesTabProps {
   date?: Date;
   cityId: string;
@@ -15,6 +20,7 @@ interface DailyActivitiesTabProps {
   removeActivity: (id: string) => void;
   travelerCount: number;
   isAllDaysView?: boolean;
+  exchangeRates: ExchangeRate[];
 }
 
 const DailyActivitiesTab = ({ 
@@ -25,7 +31,8 @@ const DailyActivitiesTab = ({
   updateActivity, 
   removeActivity, 
   travelerCount,
-  isAllDaysView = false
+  isAllDaysView = false,
+  exchangeRates
 }: DailyActivitiesTabProps) => {
   if (activities.length === 0) {
     return (
@@ -48,14 +55,15 @@ const DailyActivitiesTab = ({
   return (
     <div className="space-y-4">
       {activities
-        .sort((a, b) => a.date.getTime() - b.date.getTime())
-        .map(activity => (
-          <ActivityCard 
-            key={activity.id} 
-            activity={activity} 
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+        .map((activity) => (
+          <ActivityCard
+            key={activity.id}
+            activity={activity}
             updateActivity={updateActivity}
             removeActivity={removeActivity}
             travelerCount={travelerCount}
+            exchangeRates={exchangeRates}
           />
         ))}
     </div>

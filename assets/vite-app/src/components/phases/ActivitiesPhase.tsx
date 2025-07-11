@@ -17,7 +17,7 @@ import { calculateActivityTotalCost } from '@/components/activities/ActivityUtil
 import CityActivitiesContent from '@/components/activities/CityActivitiesContent';
 
 const ActivitiesPhase = () => {
-  const { quote, setQuote, setPhaseStatus, setCurrentPhase } = useQuote();
+  const { quote, setQuote, setPhaseStatus, setCurrentPhase, exchangeRates } = useQuote();
   const [activeCity, setActiveCity] = useState<string>(quote.cities.length > 0 ? quote.cities[0].id : '');
 
   // Calculate total costs for all phases
@@ -44,6 +44,9 @@ const ActivitiesPhase = () => {
     const newId = generateUniqueId();
     const activityDate = date || getCityById(cityId)?.checkIn || new Date();
     
+    // Get USD exchange rate or default to 1.0 if not available yet
+    const usdRate = exchangeRates.find(rate => rate.code === 'USD')?.rate || 1.0;
+    
     const newActivity = {
       id: newId,
       name: '',
@@ -51,6 +54,9 @@ const ActivitiesPhase = () => {
       city: cityId,
       type: 'tour' as const,
       cost: 0,
+      costUSD: 0,
+      currency: 'USD',
+      exchangeRate: usdRate,
       perPerson: true,
       notes: '',
       travelerCount: quote.travelerCount // Default to quote's traveler count
@@ -143,16 +149,17 @@ const ActivitiesPhase = () => {
               
               {quote.cities.map(city => (
                 <TabsContent key={city.id} value={city.id}>
-                  <CityActivitiesContent 
+                  <CityActivitiesContent
+                    quote={quote}
+                    onUpdateQuote={setQuote}
+                    exchangeRates={exchangeRates}
                     city={city}
-                    activities={quote.activities}
+                    activities={quote.activities.filter(a => a.city === city.id)}
                     travelerCount={quote.travelerCount}
                     addActivity={addActivity}
                     updateActivity={updateActivity}
                     removeActivity={removeActivity}
-                    calculateActivityTotalCost={(activity) => 
-                      calculateActivityTotalCost(activity, quote.travelerCount)
-                    }
+                    calculateActivityTotalCost={calculateActivityTotalCost}
                   />
                 </TabsContent>
               ))}

@@ -50,10 +50,11 @@ final class HomeController extends AbstractController
             ]
         );
         $responseData = json_decode($response->getContent(), true);
-        $usdRates = array_filter($responseData['result'], static fn (
-            array $rateData
-        ): bool => $rateData['toCode'] === 'USD' && in_array($rateData['code'], ['GBP', 'EUR'], true));
+        $usdRates = array_values(array_filter($responseData['result'], static fn (
+            array $rateData,
+        ): bool => $rateData['toCode'] === 'USD' && in_array($rateData['code'], ['GBP', 'EUR'], true)));
+        array_unshift($usdRates, ['code' => 'USD', 'toCode' => 'USD', 'rate' => 1]);
 
-        return $this->render('builder.html.twig', ['exchangeRates' => array_values($usdRates)]);
+        return $this->render('builder.html.twig', ['exchangeRates' => $usdRates]);
     }
 }
