@@ -47,6 +47,8 @@ const RoomExtras = ({
               extra={extra}
               onUpdate={onUpdateExtra}
               onRemove={onRemoveExtra}
+              currency={hotel.currency || 'USD'}
+              exchangeRate={hotel.exchangeRate || 1}
             />
           ))}
         </div>

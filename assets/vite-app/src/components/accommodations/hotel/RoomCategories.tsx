@@ -70,6 +70,8 @@ const RoomCategories = ({
               category={category}
               onUpdate={onUpdateCategory}
               onRemove={onRemoveCategory}
+              currency={hotel.currency || 'USD'}
+              exchangeRate={hotel.exchangeRate || 1}
             />
           ))}
         </div>

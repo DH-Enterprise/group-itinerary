@@ -30,6 +30,8 @@ export interface Hotel {
   roomCategories: RoomCategory[];
   extras: RoomExtra[];
   notes: string;
+  currency: string;
+  exchangeRate: number;
 }
 
 export interface Activity {

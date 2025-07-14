@@ -27,7 +27,11 @@ export const calculateTotalAccommodationCost = (hotels: Hotel[]): number => {
         0
       );
       
-      return total + roomCategoriesCost + extrasCost;
+      // Convert to USD using the hotel's exchange rate if available, otherwise use as is (assumed to be USD)
+      const exchangeRate = hotel.exchangeRate || 1;
+      const totalInUSD = (roomCategoriesCost + extrasCost) * exchangeRate;
+      
+      return total + totalInUSD;
     }, 0);
 };
 
