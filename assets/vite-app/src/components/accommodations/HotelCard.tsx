@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { formatCurrency } from '@/utils/quoteUtils';
+import { useQuote } from '@/context/QuoteContext';
 import HotelHeader from './hotel/HotelHeader';
 import RoomCategories from './hotel/RoomCategories';
 import RoomExtras from './hotel/RoomExtras';
@@ -22,6 +23,8 @@ interface HotelCardProps {
   onUpdateRoomExtra: (hotelId: string, extraId: string, field: string, value: any) => void;
   onRemoveRoomExtra: (hotelId: string, extraId: string) => void;
   calculateHotelCost: (hotelId: string) => number;
+  travelerCount: number;
+  groupType: 'known' | 'speculative';
 }
 
 const HotelCard = ({
@@ -36,6 +39,8 @@ const HotelCard = ({
   onUpdateRoomExtra,
   onRemoveRoomExtra,
   calculateHotelCost,
+  travelerCount,
+  groupType,
 }: HotelCardProps) => {
   return (
     <Card className={hotel.isPrimary ? "border-2 border-travel-green" : ""}>
@@ -66,6 +71,8 @@ const HotelCard = ({
             onUpdateRoomCategory(hotel.id, categoryId, field, value)
           }
           onRemoveCategory={(categoryId) => onRemoveRoomCategory(hotel.id, categoryId)}
+          travelerCount={travelerCount}
+          groupType={groupType}
         />
         
         <RoomExtras

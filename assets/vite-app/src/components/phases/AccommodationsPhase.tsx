@@ -157,6 +157,8 @@ const AccommodationsPhase = () => {
             calculateHotelCost={calculateHotelCostById}
             remainingBudget={remainingBudget}
             totalCost={totalCost}
+            travelerCount={quote.travelerCount}
+            groupType={quote.groupType}
           />
           
           <AccommodationNavigation 

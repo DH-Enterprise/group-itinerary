@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Building } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { calculateNightsInCity } from '@/utils/quoteUtils';
+import { useQuote } from '@/context/QuoteContext';
 import CityTabContent from './CityTabContent';
 
 interface AccommodationCityTabsProps {
@@ -25,6 +26,8 @@ interface AccommodationCityTabsProps {
   calculateHotelCost: (hotelId: string) => number;
   remainingBudget: number;
   totalCost: number;
+  travelerCount: number;
+  groupType: 'known' | 'speculative';
 }
 
 const AccommodationCityTabs = ({
@@ -45,6 +48,8 @@ const AccommodationCityTabs = ({
   calculateHotelCost,
   remainingBudget,
   totalCost,
+  travelerCount,
+  groupType,
 }: AccommodationCityTabsProps) => {
   return (
     <div className="bg-white rounded-lg shadow">
@@ -87,6 +92,8 @@ const AccommodationCityTabs = ({
               calculateHotelCost={calculateHotelCost}
               remainingBudget={remainingBudget}
               totalCost={totalCost}
+              travelerCount={travelerCount}
+              groupType={groupType}
             />
           </TabsContent>
         ))}

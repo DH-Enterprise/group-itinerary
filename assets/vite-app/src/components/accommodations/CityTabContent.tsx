@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { City, Hotel } from '@/types/quote';
+import { useQuote } from '@/context/QuoteContext';
 import CityHeader from './city/CityHeader';
 import EmptyCityHotels from './city/EmptyCityHotels';
 import HotelList from './city/HotelList';
@@ -21,6 +22,8 @@ interface CityTabContentProps {
   calculateHotelCost: (hotelId: string) => number;
   remainingBudget: number;
   totalCost: number;
+  travelerCount: number;
+  groupType: 'known' | 'speculative';
 }
 
 const CityTabContent = ({
@@ -39,6 +42,8 @@ const CityTabContent = ({
   calculateHotelCost,
   remainingBudget,
   totalCost,
+  travelerCount,
+  groupType,
 }: CityTabContentProps) => {
   return (
     <div className="p-6">
@@ -63,6 +68,8 @@ const CityTabContent = ({
           onUpdateRoomExtra={onUpdateRoomExtra}
           onRemoveRoomExtra={onRemoveRoomExtra}
           calculateHotelCost={calculateHotelCost}
+          travelerCount={travelerCount}
+          groupType={groupType}
         />
       )}
     </div>
