@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { Trash, Users, CalendarIcon, Check, Info } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -90,6 +90,7 @@ interface ActivityCardProps {
 }
 
 const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount, exchangeRates = [] }: ActivityCardProps) => {
+  const [travelerCountError, setTravelerCountError] = useState('');
   const activityTypes = [
     { value: 'tour', label: 'Tour/Excursion' },
     { value: 'restaurant', label: 'Restaurant/Dining' },
@@ -420,25 +421,27 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount,
                           id={`activity-travelers-${activity.id}`}
                           type="number"
                           min="1"
-                          max={travelerCount}
+                          // Remove max constraint to allow any input
                           value={activity.travelerCount || travelerCount}
                           onChange={(e) => {
                             const value = parseInt(e.target.value) || 1;
-                            const clampedValue = Math.min(Math.max(value, 1), travelerCount);
-                            updateActivity(activity.id, 'travelerCount', clampedValue);
+                            
+                            if (quote.groupType === 'known' && value > travelerCount) {
+                              setTravelerCountError(`The number of travelers for this activity (${value}) cannot exceed the total number of travelers in the quote (${travelerCount}).`);
+                            } else {
+                              setTravelerCountError('');
+                            }
+                            
+                            // Allow any positive number, but show error if it's too large
+                            updateActivity(activity.id, 'travelerCount', Math.max(1, value));
                           }}
                           className="max-w-24"
                       />
                       <span className="text-sm text-gray-500">of {travelerCount} total travelers</span>
-                      {activity.travelerCount && activity.travelerCount !== travelerCount && (
-                          <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => updateActivity(activity.id, 'travelerCount', travelerCount)}
-                              className="ml-auto text-xs"
-                          >
-                            Reset to All
-                          </Button>
+                      {travelerCountError && (
+                        <div className="text-sm text-destructive mt-1">
+                          {travelerCountError}
+                        </div>
                       )}
                     </div>
                   </div>
