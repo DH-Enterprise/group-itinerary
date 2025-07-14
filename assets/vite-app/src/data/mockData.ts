@@ -433,7 +433,11 @@ export const sampleQuote: Quote = {
   groupRanges: [
     { id: '10-14', label: '10-14 travelers', min: 10, max: 14, selected: true },
     { id: '15-19', label: '15-19 travelers', min: 15, max: 19, selected: true },
-    { id: '20-24', label: '20-24 travelers', min: 20, max: 24, selected: true }
+    { id: '20-24', label: '20-24 travelers', min: 20, max: 24, selected: true },
+    { id: '25-30', label: '25-30 travelers', min: 25, max: 30, selected: true },
+    { id: '31-34', label: '31-34 travelers', min: 31, max: 34, selected: true },
+    { id: '35-39', label: '35-39 travelers', min: 35, max: 39, selected: true },
+    { id: '40-45', label: '40-45 travelers', min: 40, max: 45, selected: true }
   ],
   budget: 75000,
   cities: sampleCities,
@@ -481,7 +485,11 @@ export const emptyQuote: Quote = {
   groupRanges: [
     { id: '10-14', label: '10-14 travelers', min: 10, max: 14, selected: true },
     { id: '15-19', label: '15-19 travelers', min: 15, max: 19, selected: true },
-    { id: '20-24', label: '20-24 travelers', min: 20, max: 24, selected: true }
+    { id: '20-24', label: '20-24 travelers', min: 20, max: 24, selected: true },
+    { id: '25-30', label: '25-30 travelers', min: 25, max: 30, selected: true },
+    { id: '31-34', label: '31-34 travelers', min: 31, max: 34, selected: true },
+    { id: '35-39', label: '35-39 travelers', min: 35, max: 39, selected: true },
+    { id: '40-45', label: '40-45 travelers', min: 40, max: 45, selected: true }
   ],
   budget: 0,
   cities: [],
