@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { format } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { Transportation, Currency } from '@/types/quote';
+import { useQuote } from '@/context/QuoteContext';
 
 interface DateAndCurrencySectionProps {
   transport: Transportation;
@@ -21,14 +22,28 @@ const DateAndCurrencySection: React.FC<DateAndCurrencySectionProps> = ({
   transport,
   onUpdate,
 }) => {
+  const { exchangeRates } = useQuote();
+  const defaultCurrency = 'EUR' as Currency;
+  const defaultExchangeRate = exchangeRates.find(rate => rate.code === defaultCurrency)?.rate || 1.25;
+  
   const coachingDetails = transport.coachingDetails || {
     driverDays: 7,
-    selectedCurrency: 'EUR' as Currency,
-    exchangeRate: 1.25,
+    selectedCurrency: defaultCurrency,
+    exchangeRate: defaultExchangeRate,
     markupRate: 1.45,
     coachClasses: [],
     extras: [],
   };
+  
+  // Update exchange rate when selected currency changes
+  useEffect(() => {
+    if (coachingDetails.selectedCurrency) {
+      const selectedRate = exchangeRates.find(rate => rate.code === coachingDetails.selectedCurrency)?.rate;
+      if (selectedRate && selectedRate !== coachingDetails.exchangeRate) {
+        updateCoachingDetails('exchangeRate', selectedRate);
+      }
+    }
+  }, [coachingDetails.selectedCurrency, exchangeRates]);
 
   const updateCoachingDetails = (field: string, value: any) => {
     const newDetails = {
@@ -97,10 +112,18 @@ const DateAndCurrencySection: React.FC<DateAndCurrencySectionProps> = ({
                   <SelectValue placeholder="Select currency" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="EUR">EUR (€)</SelectItem>
-                  <SelectItem value="GBP">GBP (£)</SelectItem>
+                  {exchangeRates.map(rate => (
+                    <SelectItem key={rate.code} value={rate.code}>
+                      {rate.code} ({rate.code === 'USD' ? '$' : rate.code === 'EUR' ? '€' : '£'})
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
+              <div className="text-sm text-muted-foreground">
+                Exchange rate: 1 {coachingDetails.selectedCurrency} = {
+                  (exchangeRates.find(rate => rate.code === coachingDetails.selectedCurrency)?.rate || 1).toFixed(4)
+                } USD
+              </div>
             </div>
             <div className="space-y-2">
               <Label>Exchange Rate</Label>
