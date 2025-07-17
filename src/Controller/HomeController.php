@@ -54,8 +54,6 @@ final class HomeController extends AbstractController
             array $rateData,
         ): bool => $rateData['toCode'] === 'USD' && in_array($rateData['code'], ['GBP', 'EUR'], true)));
         array_unshift($usdRates, ['code' => 'USD', 'toCode' => 'USD', 'rate' => 1]);
-        $usdRates[1]['rate'] = 2;
-//        dd($usdRates);
 
         return $this->render('builder.html.twig', ['exchangeRates' => $usdRates]);
     }

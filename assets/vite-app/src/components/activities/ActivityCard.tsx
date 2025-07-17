@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { format } from 'date-fns';
-import { Trash, Users, CalendarIcon, Check, Info } from 'lucide-react';
+import { Trash, Users, CalendarIcon, Check, Info, AlertCircle } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useQuote } from '@/context/QuoteContext';
 import { Input } from '@/components/ui/input';
@@ -413,37 +413,40 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount,
             <div className="space-y-4">
               {quote.groupType === 'known' ? (
                   <div className="space-y-2">
-                    <Label htmlFor={`activity-travelers-${activity.id}`} className="flex items-center">
-                      <Users className="h-4 w-4 mr-1"/> Number of Travelers
-                    </Label>
-                    <div className="flex items-center gap-2">
-                      <Input
-                          id={`activity-travelers-${activity.id}`}
-                          type="number"
-                          min="1"
-                          // Remove max constraint to allow any input
-                          value={activity.travelerCount || travelerCount}
-                          onChange={(e) => {
-                            const value = parseInt(e.target.value) || 1;
-                            
-                            if (quote.groupType === 'known' && value > travelerCount) {
-                              setTravelerCountError(`The number of travelers for this activity (${value}) cannot exceed the total number of travelers in the quote (${travelerCount}).`);
-                            } else {
-                              setTravelerCountError('');
-                            }
-                            
-                            // Allow any positive number, but show error if it's too large
-                            updateActivity(activity.id, 'travelerCount', Math.max(1, value));
-                          }}
-                          className="max-w-24"
-                      />
-                      <span className="text-sm text-gray-500">of {travelerCount} total travelers</span>
-                      {travelerCountError && (
-                        <div className="text-sm text-destructive mt-1">
-                          {travelerCountError}
-                        </div>
-                      )}
+                <Label htmlFor={`activity-travelers-${activity.id}`} className="flex items-center">
+                  <Users className="h-4 w-4 mr-1"/> Number of Travelers
+                </Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                      id={`activity-travelers-${activity.id}`}
+                      type="number"
+                      min="1"
+                      value={activity.travelerCount || travelerCount}
+                      onChange={(e) => {
+                        const value = parseInt(e.target.value) || 1;
+                        
+                        if (quote.groupType === 'known' && value > travelerCount) {
+                          setTravelerCountError(`The number of travelers for this activity (${value}) cannot exceed the total number of travelers in the quote (${travelerCount}).`);
+                        } else {
+                          setTravelerCountError('');
+                        }
+                        
+                        updateActivity(activity.id, 'travelerCount', Math.max(1, value));
+                      }}
+                      className="max-w-24"
+                  />
+                  <span className="text-sm text-gray-500">of {travelerCount} total travelers</span>
+                </div>
+                {travelerCountError && (
+                  <div className="p-3 bg-yellow-50 border-l-4 border-yellow-400 rounded-r">
+                    <div className="flex items-center text-yellow-700">
+                      <AlertCircle className="h-5 w-5 mr-2" />
+                      <div>
+                        <p className="text-sm">{travelerCountError}</p>
+                      </div>
                     </div>
+                  </div>
+                )}
                   </div>
               ) : (
                   <div className="space-y-2">
