@@ -93,12 +93,28 @@ export const removeRoomCategory = (hotels: Hotel[], hotelId: string, categoryId:
   );
 };
 
-export const addRoomExtra = (hotels: Hotel[], hotelId: string): Hotel[] => {
+export const addRoomExtra = (hotels: Hotel[], hotelId: string, cities: any[] = []): Hotel[] => {
+  // Find the hotel
+  const hotel = hotels.find(h => h.id === hotelId);
+  let nights = 1;
+  
+  // If hotel and cities are available, calculate the number of nights
+  if (hotel && cities.length > 0) {
+    const city = cities.find(c => c.id === hotel.city);
+    if (city && city.checkIn && city.checkOut) {
+      const checkIn = new Date(city.checkIn);
+      const checkOut = new Date(city.checkOut);
+      const diffTime = Math.abs(checkOut.getTime() - checkIn.getTime());
+      nights = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    }
+  }
+  
   const newExtra: RoomExtra = {
     id: generateUniqueId(),
     name: '',
     rate: 0,
-    quantity: 1
+    quantity: 1,
+    nights: nights
   };
 
   return hotels.map(hotel =>

@@ -20,6 +20,7 @@ export interface RoomExtra {
   name: string;
   rate: number;
   quantity: number;
+  nights: number;
 }
 
 export interface Hotel {
