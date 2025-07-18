@@ -12,6 +12,7 @@ export interface RoomCategory {
   type: string;
   category?: string;
   rate: number;
+  rateUsd: number;
   quantity: number;
 }
 
@@ -19,7 +20,9 @@ export interface RoomExtra {
   id: string;
   name: string;
   rate: number;
+  rateUsd: number;
   quantity: number;
+  nights: number;
 }
 
 export interface Hotel {
@@ -30,6 +33,8 @@ export interface Hotel {
   roomCategories: RoomCategory[];
   extras: RoomExtra[];
   notes: string;
+  currency: string;
+  exchangeRate: number;
 }
 
 export interface Activity {
@@ -148,6 +153,11 @@ export interface Quote {
   updatedAt: Date;
   status: 'draft' | 'pending' | 'approved' | 'sent' | 'accepted' | 'rejected';
   phase: 'initialization' | 'accommodations' | 'activities' | 'transportation' | 'itinerary' | 'finalization';
+  // Exchange rates are provided by the backend via window.exchangeRates
+  exchangeRates?: Array<{
+    code: string;
+    rate: number;
+  }>;
 }
 
 export interface User {

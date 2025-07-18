@@ -57,7 +57,7 @@ const InitializationPhase = () => {
     const { name, value } = e.target;
     setQuote(prev => ({
       ...prev,
-      [name]: parseInt(value) || 0
+      [name]: value === '' ? '' : parseInt(value) || 0
     }));
   };
 
@@ -123,7 +123,7 @@ const InitializationPhase = () => {
 
   const validateForm = () => {
     // Check required fields that apply to all group types
-    if (!quote.agencyName || !quote.agentName || !quote.startDate || !quote.endDate) {
+    if (!quote.agencyName || !quote.agentName || !quote.startDate || !quote.endDate || !quote.budget) {
       return false;
     }
     

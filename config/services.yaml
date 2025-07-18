@@ -5,7 +5,7 @@
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
     # Admin API configuration
-    app.admin_base_url: '%env(resolve:ADMIN_BASE_URL)%'
+    app.orion_url: '%env(resolve:ORION_URL)%'
     app.admin_api_token: '%env(resolve:ADMIN_API_TOKEN)%'
     app.basic_auth_credentials: '%env(resolve:BASIC_AUTH_CREDENTIALS)%'
 

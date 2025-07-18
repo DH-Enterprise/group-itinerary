@@ -100,7 +100,7 @@ const AccommodationsPhase = () => {
   const handleAddRoomExtra = (hotelId: string) => {
     setQuote(prev => ({
       ...prev,
-      hotels: hotelFunctions.addRoomExtra(prev.hotels, hotelId)
+      hotels: hotelFunctions.addRoomExtra(prev.hotels, hotelId, prev.cities)
     }));
   };
 
@@ -157,6 +157,8 @@ const AccommodationsPhase = () => {
             calculateHotelCost={calculateHotelCostById}
             remainingBudget={remainingBudget}
             totalCost={totalCost}
+            travelerCount={quote.travelerCount}
+            groupType={quote.groupType}
           />
           
           <AccommodationNavigation 

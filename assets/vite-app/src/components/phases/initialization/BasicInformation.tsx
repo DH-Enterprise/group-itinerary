@@ -109,7 +109,13 @@ const BasicInformation = ({
 
   const isFieldInvalid = (value: any, type: 'string' | 'number' | 'travelerCount' = 'string'): boolean => {
     if (!showValidation) return false;
-    if (type === 'number') return !value || isNaN(Number(value)) || Number(value) < 10;
+    if (type === 'number') {
+      // For budget field, require value > 0 when form is being validated
+      if (showValidation && (value === '' || value === null || value === undefined)) {
+        return true;
+      }
+      return value !== '' && (isNaN(Number(value)) || Number(value) <= 0);
+    }
     if (type === 'travelerCount') return !value || isNaN(Number(value)) || Number(value) < 10;
     return !value;
   };
@@ -391,7 +397,7 @@ const BasicInformation = ({
         {isFieldInvalid(quote.budget, 'number') && (
           <div className="flex items-center gap-2 text-destructive text-sm mt-1">
             <AlertCircle className="h-4 w-4" />
-            <span>Budget must be greater than 0</span>
+            <span>Budget is required and must be greater than 0</span>
           </div>
         )}
       </div>

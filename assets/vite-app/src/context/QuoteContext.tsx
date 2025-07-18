@@ -4,6 +4,11 @@ import { emptyQuote, sampleQuote } from '@/data/mockData';
 import { formatLocalDate } from '@/utils/dateUtils';
 import { toast } from '@/components/ui/use-toast';
 
+type ExchangeRate = {
+  code: string;
+  rate: number;
+};
+
 interface QuoteContextType {
   quote: Quote;
   setQuote: React.Dispatch<React.SetStateAction<Quote>>;
@@ -14,15 +19,32 @@ interface QuoteContextType {
   saveQuote: () => void;
   loadSampleQuote: () => void;
   createNewQuote: () => void;
+  exchangeRates: ExchangeRate[];
 }
 
 const QuoteContext = createContext<QuoteContextType | undefined>(undefined);
 
 interface QuoteProviderProps {
   children: ReactNode;
+  exchangeRates?: ExchangeRate[];
 }
 
-export const QuoteProvider = ({ children }: QuoteProviderProps) => {
+// Get exchange rates from window.exchangeRates or use default values
+const getExchangeRates = (): ExchangeRate[] => {
+  // Try to get rates from window.exchangeRates first
+  if (typeof window !== 'undefined' && (window as any).exchangeRates) {
+    return (window as any).exchangeRates;
+  }
+  
+  // Fallback to default rates if not available
+  return [
+    { code: 'USD', rate: 1.0 },
+    { code: 'EUR', rate: 0.85 },
+    { code: 'GBP', rate: 0.75 }
+  ];
+};
+
+export const QuoteProvider = ({ children, exchangeRates = getExchangeRates() }: QuoteProviderProps) => {
   const [quote, setQuote] = useState<Quote>(emptyQuote);
   const [currentPhase, setCurrentPhase] = useState<string>('initialization');
   const [phaseStatuses, setPhaseStatuses] = useState<Record<string, PhaseStatus>>({
@@ -68,12 +90,28 @@ export const QuoteProvider = ({ children }: QuoteProviderProps) => {
         date: transport.date ? formatLocalDate(transport.date) : transport.date,
       }));
 
-      // Transform hotels to use cityName instead of city
+      // Transform hotels to include rateUsd for room categories and extras
       const transformedHotels = quote.hotels.map(hotel => {
         const city = quote.cities.find(c => c.id === hotel.city);
+        const exchangeRate = hotel.exchangeRate || 1;
+        
+        // Transform room categories to include rateUsd
+        const transformedRoomCategories = hotel.roomCategories.map(room => ({
+          ...room,
+          rateUsd: room.rate * exchangeRate,
+        }));
+        
+        // Transform extras to include rateUsd
+        const transformedExtras = hotel.extras.map(extra => ({
+          ...extra,
+          rateUsd: extra.rate * exchangeRate,
+        }));
+        
         return {
           ...hotel,
           cityName: city ? city.name : hotel.city,
+          roomCategories: transformedRoomCategories,
+          extras: transformedExtras,
         };
       });
 
@@ -92,6 +130,9 @@ export const QuoteProvider = ({ children }: QuoteProviderProps) => {
         hotels: transformedHotels,
         agentId: quote.agentId || null,
       };
+
+      // Debug: Log the transformed hotels to verify rateUsd is included
+      console.log('Transformed Hotels:', JSON.stringify(transformedHotels, null, 2));
 
       const response = await fetch('/api/quotes', {
         method: 'POST',
@@ -192,6 +233,7 @@ export const QuoteProvider = ({ children }: QuoteProviderProps) => {
         saveQuote,
         loadSampleQuote,
         createNewQuote,
+        exchangeRates,
       }}
     >
       {children}

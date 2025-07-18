@@ -207,9 +207,9 @@ export const sampleActivities: Activity[] = [
     city: "city1",
     type: "tour",
     cost: 25,
-    costUSD: 27.50,
-    currency: "EUR",
-    exchangeRate: 1.1,
+    costUSD: 25,
+    currency: "USD",
+    exchangeRate: 1.0,
     perPerson: true,
     remarks: "Private guided tour of the Guinness Storehouse"
   },
@@ -220,9 +220,9 @@ export const sampleActivities: Activity[] = [
     city: "city1",
     type: "restaurant",
     cost: 120,
-    costUSD: 132.00,
-    currency: "EUR",
-    exchangeRate: 1.1,
+    costUSD: 120,
+    currency: "USD",
+    exchangeRate: 1.0,
     perPerson: true,
     remarks: "Michelin-starred restaurant in Dublin"
   },
@@ -233,9 +233,9 @@ export const sampleActivities: Activity[] = [
     city: "city2",
     type: "tour",
     cost: 85,
-    costUSD: 93.50,
-    currency: "EUR",
-    exchangeRate: 1.1,
+    costUSD: 85,
+    currency: "USD",
+    exchangeRate: 1.0,
     perPerson: true,
     remarks: "Full day excursion to the magnificent Cliffs of Moher"
   },
@@ -246,9 +246,9 @@ export const sampleActivities: Activity[] = [
     city: "city3",
     type: "tour",
     cost: 35,
-    costUSD: 45.50,
-    currency: "GBP",
-    exchangeRate: 1.3,
+    costUSD: 35,
+    currency: "USD",
+    exchangeRate: 1.0,
     perPerson: true,
     remarks: "Guided tour of historic Edinburgh Castle"
   },
@@ -433,7 +433,11 @@ export const sampleQuote: Quote = {
   groupRanges: [
     { id: '10-14', label: '10-14 travelers', min: 10, max: 14, selected: true },
     { id: '15-19', label: '15-19 travelers', min: 15, max: 19, selected: true },
-    { id: '20-24', label: '20-24 travelers', min: 20, max: 24, selected: true }
+    { id: '20-24', label: '20-24 travelers', min: 20, max: 24, selected: true },
+    { id: '25-30', label: '25-30 travelers', min: 25, max: 30, selected: true },
+    { id: '31-34', label: '31-34 travelers', min: 31, max: 34, selected: true },
+    { id: '35-39', label: '35-39 travelers', min: 35, max: 39, selected: true },
+    { id: '40-45', label: '40-45 travelers', min: 40, max: 45, selected: true }
   ],
   budget: 75000,
   cities: sampleCities,
@@ -465,7 +469,8 @@ export const sampleQuote: Quote = {
   updatedBy: "user1",
   updatedAt: new Date(2025, 2, 20),
   status: "draft",
-  phase: "initialization"
+  phase: "initialization",
+  // Exchange rates are provided by the backend via window.exchangeRates
 };
 
 export const emptyQuote: Quote = {
@@ -480,7 +485,11 @@ export const emptyQuote: Quote = {
   groupRanges: [
     { id: '10-14', label: '10-14 travelers', min: 10, max: 14, selected: true },
     { id: '15-19', label: '15-19 travelers', min: 15, max: 19, selected: true },
-    { id: '20-24', label: '20-24 travelers', min: 20, max: 24, selected: true }
+    { id: '20-24', label: '20-24 travelers', min: 20, max: 24, selected: true },
+    { id: '25-30', label: '25-30 travelers', min: 25, max: 30, selected: true },
+    { id: '31-34', label: '31-34 travelers', min: 31, max: 34, selected: true },
+    { id: '35-39', label: '35-39 travelers', min: 35, max: 39, selected: true },
+    { id: '40-45', label: '40-45 travelers', min: 40, max: 45, selected: true }
   ],
   budget: 0,
   cities: [],
@@ -497,5 +506,6 @@ export const emptyQuote: Quote = {
   updatedBy: "user1",
   updatedAt: new Date(),
   status: "draft",
-  phase: "initialization"
+  phase: "initialization",
+  // Exchange rates are provided by the backend via window.exchangeRates
 };

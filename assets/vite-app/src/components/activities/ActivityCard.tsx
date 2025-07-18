@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { format } from 'date-fns';
-import { Trash, Users, CalendarIcon, Check, Info } from 'lucide-react';
+import { Trash, Users, CalendarIcon, Check, Info, AlertCircle } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useQuote } from '@/context/QuoteContext';
 import { Input } from '@/components/ui/input';
@@ -14,7 +15,7 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { Activity } from '@/types/quote';
 import { formatCurrency } from '@/utils/quoteUtils';
-import { cn } from '@/lib/utils';
+import { getCurrencySymbol } from '@/utils/currencyUtils';
 import { useActivityCosts } from '@/hooks/useActivityCosts';
 
 interface BaseTravelerCost {
@@ -38,9 +39,14 @@ interface ActivityCardProps {
   updateActivity: (id: string, field: string, value: any) => void;
   removeActivity: (id: string) => void;
   travelerCount: number; // Default traveler count from quote
+  exchangeRates: Array<{
+    code: string;
+    rate: number;
+  }>;
 }
 
-const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount }: ActivityCardProps) => {
+const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount, exchangeRates = [] }: ActivityCardProps) => {
+  const [travelerCountError, setTravelerCountError] = useState('');
   const activityTypes = [
     { value: 'tour', label: 'Tour/Excursion' },
     { value: 'restaurant', label: 'Restaurant/Dining' },
@@ -91,6 +97,24 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
       ...previousStepValue,
       [range.id]: true
     }), {});
+    
+  // Handle currency change - update both currency and exchange rate
+  const handleCurrencyChange = (value: string) => {
+    const newCurrency = value;
+    const selectedRate = exchangeRates.find(rate => rate.code === newCurrency);
+    
+    if (selectedRate) {
+      updateActivity(activity.id, 'currency', newCurrency);
+      // Update exchange rate to the selected currency's rate
+      updateActivity(activity.id, 'exchangeRate', selectedRate.rate);
+    }
+  };
+  
+  // Handle exchange rate change - should be read-only but keeping as a fallback
+  const handleExchangeRateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseFloat(e.target.value) || 0;
+    updateActivity(activity.id, 'exchangeRate', value);
+  };
 
   // Get only the selected group ranges for display
   const selectedGroupRanges = quote.groupRanges.filter(range => range.selected);
@@ -238,19 +262,25 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
 
           <div className="space-y-2">
             <Label htmlFor={`activity-currency-${activity.id}`}>Currency</Label>
-            <Select
-                value={activity.currency || 'USD'}
-                onValueChange={(value) => {
-                  updateActivity(activity.id, 'currency', value as 'USD' | 'EUR' | 'GBP');
-                }}
+            <Select 
+              onValueChange={handleCurrencyChange} 
+              value={updatedActivity.currency}
             >
-              <SelectTrigger id={`activity-currency-${activity.id}`}>
-                <SelectValue placeholder="Select currency"/>
+              <SelectTrigger className="w-[100px]">
+                <SelectValue placeholder="Select currency" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="USD">USD ($)</SelectItem>
-                <SelectItem value="EUR">EUR (€)</SelectItem>
-                <SelectItem value="GBP">GBP (£)</SelectItem>
+                {exchangeRates.length > 0 ? (
+                  exchangeRates.map((rate) => (
+                    <SelectItem key={rate.code} value={rate.code}>
+                      {rate.code} ({getCurrencySymbol(rate.code)})
+                    </SelectItem>
+                  ))
+                ) : (
+                  <div className="px-3 py-2 text-sm text-muted-foreground">
+                    Loading currencies...
+                  </div>
+                )}
               </SelectContent>
             </Select>
           </div>
@@ -259,16 +289,22 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
             <Label htmlFor={`activity-exchange-rate-${activity.id}`}>
               <div className="flex items-center justify-between">
                 <span>Exchange Rate to USD</span>
+                <span className="text-xs text-gray-500">
+                  {activity.currency || 'USD'} to USD
+                </span>
               </div>
             </Label>
             <Input
                 id={`activity-exchange-rate-${activity.id}`}
                 type="number"
-                step="0.0001"
                 min="0"
-                value={activity.exchangeRate || 1}
-                onChange={(e) => handleCostChange('exchangeRate', parseFloat(e.target.value) || 1)}
+                step="0.0001"
+                value={updatedActivity.exchangeRate || ''}
+                onChange={handleExchangeRateChange}
+                className="w-[100px] bg-gray-100"
                 placeholder="1.0"
+                readOnly
+                title="Exchange rate is automatically set based on selected currency"
             />
           </div>
 
@@ -296,9 +332,9 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
                   type="number"
                   step="0.01"
                   value={activity.costUSD?.toFixed(2) || '0.00'}
-                  onChange={(e) => handleCostUpdate('costUSD', parseFloat(e.target.value) || 0)}
+                  readOnly
                   placeholder="0.00"
-                  className="pr-10"
+                  className="pr-10 bg-gray-100"
               />
               <span className="absolute right-2 top-2.5 text-sm text-muted-foreground">
                 = {activity.costUSD?.toFixed(2)} USD
@@ -333,35 +369,40 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount 
             <div className="space-y-4">
               {quote.groupType === 'known' ? (
                   <div className="space-y-2">
-                    <Label htmlFor={`activity-travelers-${activity.id}`} className="flex items-center">
-                      <Users className="h-4 w-4 mr-1"/> Number of Travelers
-                    </Label>
-                    <div className="flex items-center gap-2">
-                      <Input
-                          id={`activity-travelers-${activity.id}`}
-                          type="number"
-                          min="1"
-                          max={travelerCount}
-                          value={activity.travelerCount || travelerCount}
-                          onChange={(e) => {
-                            const value = parseInt(e.target.value) || 1;
-                            const clampedValue = Math.min(Math.max(value, 1), travelerCount);
-                            updateActivity(activity.id, 'travelerCount', clampedValue);
-                          }}
-                          className="max-w-24"
-                      />
-                      <span className="text-sm text-gray-500">of {travelerCount} total travelers</span>
-                      {activity.travelerCount && activity.travelerCount !== travelerCount && (
-                          <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => updateActivity(activity.id, 'travelerCount', travelerCount)}
-                              className="ml-auto text-xs"
-                          >
-                            Reset to All
-                          </Button>
-                      )}
+                <Label htmlFor={`activity-travelers-${activity.id}`} className="flex items-center">
+                  <Users className="h-4 w-4 mr-1"/> Number of Travelers
+                </Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                      id={`activity-travelers-${activity.id}`}
+                      type="number"
+                      min="1"
+                      value={activity.travelerCount || travelerCount}
+                      onChange={(e) => {
+                        const value = parseInt(e.target.value) || 1;
+                        
+                        if (quote.groupType === 'known' && value > travelerCount) {
+                          setTravelerCountError(`The number of travelers for this activity (${value}) cannot exceed the total number of travelers in the quote (${travelerCount}).`);
+                        } else {
+                          setTravelerCountError('');
+                        }
+                        
+                        updateActivity(activity.id, 'travelerCount', Math.max(1, value));
+                      }}
+                      className="max-w-24"
+                  />
+                  <span className="text-sm text-gray-500">of {travelerCount} total travelers</span>
+                </div>
+                {travelerCountError && (
+                  <div className="p-3 bg-yellow-50 border-l-4 border-yellow-400 rounded-r">
+                    <div className="flex items-center text-yellow-700">
+                      <AlertCircle className="h-5 w-5 mr-2" />
+                      <div>
+                        <p className="text-sm">{travelerCountError}</p>
+                      </div>
                     </div>
+                  </div>
+                )}
                   </div>
               ) : (
                   <div className="space-y-2">

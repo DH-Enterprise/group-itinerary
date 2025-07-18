@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Trash } from 'lucide-react';
 import { formatCurrency } from '@/utils/quoteUtils';
+import { getCurrencySymbol } from '@/utils/currencyUtils';
 
 // Map room type names to person counts
 const ROOM_TYPE_PERSON_COUNT: Record<string, number> = {
@@ -36,9 +37,17 @@ interface RoomCategoryRowProps {
   category: RoomCategory;
   onUpdate: (categoryId: string, field: string, value: any) => void;
   onRemove: (categoryId: string) => void;
+  currency?: string;
+  exchangeRate?: number;
 }
 
-const RoomCategoryRow = ({ category, onUpdate, onRemove }: RoomCategoryRowProps) => {
+const RoomCategoryRow = ({ 
+  category, 
+  onUpdate, 
+  onRemove, 
+  currency = 'USD',
+  exchangeRate = 1
+}: RoomCategoryRowProps) => {
   const personCount = getPersonCount(category.name);
   const perPersonRate = category.rate / personCount;
   const totalCost = category.rate * category.quantity;
@@ -85,17 +94,31 @@ const RoomCategoryRow = ({ category, onUpdate, onRemove }: RoomCategoryRowProps)
       </div>
       
       <div>
-        <Label htmlFor={`category-rate-${category.id}`} className="text-xs">Room Rate (USD)</Label>
-        <Input
-          id={`category-rate-${category.id}`}
-          type="number"
-          value={category.rate}
-          onChange={(e) => onUpdate(category.id, 'rate', parseFloat(e.target.value) || 0)}
-          placeholder="0.00"
-          min="0"
-          step="0.01"
-          className="mt-1"
-        />
+        <Label htmlFor={`category-rate-${category.id}`} className="text-xs">
+          Room Rate ({currency})
+        </Label>
+        <div className="relative mt-1">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <span className="text-gray-500 text-sm">
+              {getCurrencySymbol(currency)}
+            </span>
+          </div>
+          <Input
+            id={`category-rate-${category.id}`}
+            type="number"
+            value={category.rate}
+            onChange={(e) => onUpdate(category.id, 'rate', parseFloat(e.target.value) || 0)}
+            placeholder="0.00"
+            min="0"
+            step="0.01"
+            className="pl-6"
+          />
+        </div>
+        {currency !== 'USD' && exchangeRate && (
+          <p className="text-xs text-gray-500 mt-1">
+            ≈ {getCurrencySymbol('USD')}{(category.rate * exchangeRate).toFixed(2)}
+          </p>
+        )}
       </div>
       
       <div>
@@ -114,14 +137,14 @@ const RoomCategoryRow = ({ category, onUpdate, onRemove }: RoomCategoryRowProps)
       <div className="flex flex-col">
         <Label className="text-xs">Per Person (USD)</Label>
         <div className="mt-1 p-2 bg-white border rounded-md text-sm">
-          {formatCurrency(perPersonRate)}
+          {formatCurrency(currency === 'USD' ? perPersonRate : perPersonRate * (exchangeRate || 1))}
         </div>
       </div>
       
       <div className="flex flex-col">
         <Label className="text-xs">Total Cost (USD)</Label>
         <div className="mt-1 p-2 bg-white border rounded-md text-sm font-medium">
-          {formatCurrency(totalCost)}
+          {formatCurrency(currency === 'USD' ? totalCost : totalCost * (exchangeRate || 1))}
         </div>
       </div>
       

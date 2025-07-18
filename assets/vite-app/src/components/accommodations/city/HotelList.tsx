@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Hotel } from '@/types/quote';
+import { useQuote } from '@/context/QuoteContext';
 import HotelCard from '../HotelCard';
 
 interface HotelListProps {
@@ -15,6 +16,8 @@ interface HotelListProps {
   onUpdateRoomExtra: (hotelId: string, extraId: string, field: string, value: any) => void;
   onRemoveRoomExtra: (hotelId: string, extraId: string) => void;
   calculateHotelCost: (hotelId: string) => number;
+  travelerCount: number;
+  groupType: 'known' | 'speculative';
 }
 
 const HotelList = ({
@@ -29,6 +32,8 @@ const HotelList = ({
   onUpdateRoomExtra,
   onRemoveRoomExtra,
   calculateHotelCost,
+  travelerCount,
+  groupType,
 }: HotelListProps) => {
   return (
     <div className="space-y-6">
@@ -46,6 +51,8 @@ const HotelList = ({
           onUpdateRoomExtra={onUpdateRoomExtra}
           onRemoveRoomExtra={onRemoveRoomExtra}
           calculateHotelCost={calculateHotelCost}
+          travelerCount={travelerCount}
+          groupType={groupType}
         />
       ))}
     </div>

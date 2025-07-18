@@ -23,22 +23,35 @@ export const calculateTotalAccommodationCost = (hotels: Hotel[]): number => {
       );
       
       const extrasCost = hotel.extras.reduce(
-        (sum, extra) => sum + extra.rate * extra.quantity,
+        (sum, extra) => {
+          // Calculate cost for each extra: rate * quantity * nights (default to 1 if not specified)
+          const nights = extra.nights > 0 ? extra.nights : 1;
+          return sum + (extra.rate * extra.quantity * nights);
+        },
         0
       );
       
-      return total + roomCategoriesCost + extrasCost;
+      // Convert to USD using the hotel's exchange rate if available, otherwise use as is (assumed to be USD)
+      const exchangeRate = hotel.exchangeRate || 1;
+      const totalInUSD = (roomCategoriesCost + extrasCost) * exchangeRate;
+      
+      return total + totalInUSD;
     }, 0);
 };
 
 export const calculateTotalActivityCost = (activities: Activity[]): number => {
   return activities.reduce((total, activity) => {
-    if (activity.perPerson) {
-      // Use activity-specific traveler count if available, otherwise use default (shouldn't happen)
-      const travelerCount = activity.travelerCount !== undefined ? activity.travelerCount : 1;
-      return total + activity.cost * travelerCount;
-    }
-    return total + activity.cost;
+    // Calculate base cost (in activity's currency)
+    let baseCost = activity.perPerson 
+      ? activity.cost * (activity.travelerCount || 1)
+      : activity.cost;
+      
+    // Convert to USD using the exchange rate if available, otherwise use the cost as is
+    const costInUSD = activity.exchangeRate 
+      ? baseCost * activity.exchangeRate 
+      : baseCost;
+      
+    return total + costInUSD;
   }, 0);
 };
 
@@ -66,10 +79,11 @@ export const calculatePerPersonCost = (quote: Quote): number => {
   return totalCost / quote.travelerCount;
 };
 
-export const formatCurrency = (amount: number): string => {
+export const formatCurrency = (amount: number, currency: string = 'USD'): string => {
   return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
+    style: 'decimal',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
   }).format(amount);
 };
 

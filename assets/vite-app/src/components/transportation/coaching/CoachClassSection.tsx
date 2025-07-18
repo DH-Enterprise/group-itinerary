@@ -1,5 +1,6 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useQuote } from '@/context/QuoteContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -22,13 +23,20 @@ const CoachClassSection: React.FC<CoachClassSectionProps> = ({
   transport,
   onUpdate,
 }) => {
+  const { exchangeRates } = useQuote();
+  const defaultCurrency = 'EUR' as Currency;
+  const defaultExchangeRate = exchangeRates.find(rate => rate.code === defaultCurrency)?.rate || 1.25;
+
   // Create a default coaching details object if not present
   const coachingDetails = transport.coachingDetails || {
     driverDays: 7,
-    selectedCurrency: 'EUR' as Currency,
-    exchangeRate: 1.25,
+    selectedCurrency: defaultCurrency,
+    exchangeRate: defaultExchangeRate,
     markupRate: 1.45,
-    coachClasses: defaultCoachClasses,
+    coachClasses: defaultCoachClasses.map(cls => ({
+      ...cls,
+      currency: defaultCurrency,
+    })),
     extras: [], 
   };
 

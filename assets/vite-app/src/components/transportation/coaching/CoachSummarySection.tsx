@@ -1,5 +1,6 @@
 
-import React from 'react';
+import React, { useMemo } from 'react';
+import { useQuote } from '@/context/QuoteContext';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
 import { Transportation, CoachClass, CoachExtra } from '@/types/quote';
 
@@ -8,28 +9,37 @@ interface CoachSummarySectionProps {
 }
 
 const CoachSummarySection: React.FC<CoachSummarySectionProps> = ({ transport }) => {
+  const { exchangeRates } = useQuote();
+  
   // Create a default coaching details object if not present
-  const coachingDetails = transport.coachingDetails || {
-    driverDays: 7,
-    selectedCurrency: 'EUR',
-    exchangeRate: 1.25,
-    markupRate: 1.45,
-    coachClasses: [],
-    extras: [],
-  };
+  const coachingDetails = useMemo(() => {
+    const defaultCurrency = 'EUR';
+    const defaultExchangeRate = exchangeRates.find(rate => rate.code === defaultCurrency)?.rate || 1.25;
+    
+    return transport.coachingDetails || {
+      driverDays: 7,
+      selectedCurrency: defaultCurrency,
+      exchangeRate: defaultExchangeRate,
+      markupRate: 1.45,
+      coachClasses: [],
+      extras: [],
+    };
+  }, [transport.coachingDetails, exchangeRates]);
 
   // Safely access coach classes and extras
   const coachClasses = coachingDetails.coachClasses || [];
   const extras = coachingDetails.extras || [];
 
   const calculateTotals = (coachClass: CoachClass) => {
-    const { driverDays, exchangeRate, markupRate } = coachingDetails;
+    const { driverDays, selectedCurrency, markupRate } = coachingDetails;
     const dailyRate = coachClass.dailyRate || 0;
+    const exchangeRate = exchangeRates.find(rate => rate.code === selectedCurrency)?.rate || 1;
+    
     const baseNetForeign = dailyRate * driverDays;
     const baseUSDNet = baseNetForeign * exchangeRate;
     const baseUSDSell = baseUSDNet * markupRate;
 
-    // Calculate extras total
+    // Calculate extras total (already in USD)
     const extrasTotal = extras
       .filter(extra => extra.enabled)
       .reduce((sum, extra) => sum + ((extra.rate || 0) * (extra.days || 0)), 0);
@@ -45,6 +55,9 @@ const CoachSummarySection: React.FC<CoachSummarySectionProps> = ({ transport }) 
 
   // Calculate the summary totals
   const calculateSummaryTotals = () => {
+    const { selectedCurrency } = coachingDetails;
+    const exchangeRate = exchangeRates.find(rate => rate.code === selectedCurrency)?.rate || 1;
+    
     let totalForeignCurrency = 0;
     let totalForeignNet = 0;
     let totalUSDNet = 0;
@@ -54,8 +67,11 @@ const CoachSummarySection: React.FC<CoachSummarySectionProps> = ({ transport }) 
     coachClasses
       .filter(cc => cc.enabled)
       .forEach((coachClass) => {
-        const { driverDays, exchangeRate, markupRate } = coachingDetails;
+        const { driverDays, selectedCurrency } = coachingDetails;
         const dailyRate = coachClass.dailyRate || 0;
+        const exchangeRate = exchangeRates.find(rate => rate.code === selectedCurrency)?.rate || 1;
+        const markupRate = coachingDetails.markupRate;
+        
         totalForeignCurrency += dailyRate;
         
         const baseNetForeign = dailyRate * driverDays;
@@ -72,7 +88,8 @@ const CoachSummarySection: React.FC<CoachSummarySectionProps> = ({ transport }) 
     extras
       .filter(extra => extra.enabled)
       .forEach((extra) => {
-        const { exchangeRate, markupRate } = coachingDetails;
+        const { selectedCurrency, markupRate } = coachingDetails;
+        const exchangeRate = exchangeRates.find(rate => rate.code === selectedCurrency)?.rate || 1;
         const extraRate = extra.rate || 0;
         const extraDays = extra.days || 0;
         
