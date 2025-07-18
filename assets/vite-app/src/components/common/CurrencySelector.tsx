@@ -2,6 +2,7 @@ import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { getCurrencySymbol } from '@/utils/currencyUtils';
 
 interface CurrencySelectorProps {
   value: string;
@@ -9,42 +10,6 @@ interface CurrencySelectorProps {
   exchangeRates: Array<{ code: string; rate: number }>;
   className?: string;
 }
-
-// Helper function to get currency symbol
-const getCurrencySymbol = (currencyCode: string) => {
-  const symbols: Record<string, string> = {
-    'USD': '$',
-    'EUR': '€',
-    'GBP': '£',
-    'JPY': '¥',
-    'CAD': 'C$',
-    'AUD': 'A$',
-    'CNY': '¥',
-    'INR': '₹',
-    'BRL': 'R$',
-    'MXN': 'MX$',
-    'KRW': '₩',
-    'RUB': '₽',
-    'TRY': '₺',
-    'IDR': 'Rp',
-    'THB': '฿',
-    'VND': '₫',
-    'MYR': 'RM',
-    'SGD': 'S$',
-    'NZD': 'NZ$',
-    'PHP': '₱',
-    'HKD': 'HK$',
-    'SEK': 'kr',
-    'CHF': 'CHF',
-    'NOK': 'kr',
-    'DKK': 'kr',
-    'PLN': 'zł',
-    'HUF': 'Ft',
-    'CZK': 'Kč',
-    'ILS': '₪'
-  };
-  return symbols[currencyCode] || currencyCode;
-};
 
 const CurrencySelector: React.FC<CurrencySelectorProps> = ({
   value,

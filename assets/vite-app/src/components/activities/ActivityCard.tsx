@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { Trash, Users, CalendarIcon, Check, Info, AlertCircle } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useQuote } from '@/context/QuoteContext';
 import { Input } from '@/components/ui/input';
@@ -14,53 +15,8 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { Activity } from '@/types/quote';
 import { formatCurrency } from '@/utils/quoteUtils';
-import { cn } from '@/lib/utils';
+import { getCurrencySymbol } from '@/utils/currencyUtils';
 import { useActivityCosts } from '@/hooks/useActivityCosts';
-
-// Helper function to get currency symbol
-const getCurrencySymbol = (currencyCode: string) => {
-  const symbols: Record<string, string> = {
-    'USD': '$',
-    'EUR': '€',
-    'GBP': '£',
-    'JPY': '¥',
-    'CAD': 'C$',
-    'AUD': 'A$',
-    'CNY': '¥',
-    'INR': '₹',
-    'BRL': 'R$',
-    'MXN': 'MX$',
-    'KRW': '₩',
-    'RUB': '₽',
-    'TRY': '₺',
-    'IDR': 'Rp',
-    'THB': '฿',
-    'VND': '₫',
-    'MYR': 'RM',
-    'SGD': 'S$',
-    'NZD': 'NZ$',
-    'PHP': '₱',
-    'HKD': 'HK$',
-    'SEK': 'kr',
-    'CHF': 'CHF',
-    'NOK': 'kr',
-    'DKK': 'kr',
-    'PLN': 'zł',
-    'HUF': 'Ft',
-    'CZK': 'Kč',
-    'ILS': '₪',
-    'ZAR': 'R',
-    'SAR': '﷼',
-    'AED': 'د.إ',
-    'CLP': 'CLP$',
-    'TWD': 'NT$',
-    'PKR': '₨',
-    'EGP': 'E£',
-    'COP': 'COL$',
-    'PEN': 'S/.'
-  };
-  return symbols[currencyCode] || currencyCode;
-};
 
 interface BaseTravelerCost {
   count: number;
