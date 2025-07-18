@@ -23,7 +23,11 @@ export const calculateTotalAccommodationCost = (hotels: Hotel[]): number => {
       );
       
       const extrasCost = hotel.extras.reduce(
-        (sum, extra) => sum + extra.rate * extra.quantity,
+        (sum, extra) => {
+          // Calculate cost for each extra: rate * quantity * nights (default to 1 if not specified)
+          const nights = extra.nights > 0 ? extra.nights : 1;
+          return sum + (extra.rate * extra.quantity * nights);
+        },
         0
       );
       

@@ -376,9 +376,9 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount,
                   type="number"
                   step="0.01"
                   value={activity.costUSD?.toFixed(2) || '0.00'}
-                  onChange={(e) => handleCostUpdate('costUSD', parseFloat(e.target.value) || 0)}
+                  readOnly
                   placeholder="0.00"
-                  className="pr-10"
+                  className="pr-10 bg-gray-100"
               />
               <span className="absolute right-2 top-2.5 text-sm text-muted-foreground">
                 = {activity.costUSD?.toFixed(2)} USD
