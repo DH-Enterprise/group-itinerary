@@ -90,12 +90,28 @@ export const QuoteProvider = ({ children, exchangeRates = getExchangeRates() }: 
         date: transport.date ? formatLocalDate(transport.date) : transport.date,
       }));
 
-      // Transform hotels to use cityName instead of city
+      // Transform hotels to include rateUsd for room categories and extras
       const transformedHotels = quote.hotels.map(hotel => {
         const city = quote.cities.find(c => c.id === hotel.city);
+        const exchangeRate = hotel.exchangeRate || 1;
+        
+        // Transform room categories to include rateUsd
+        const transformedRoomCategories = hotel.roomCategories.map(room => ({
+          ...room,
+          rateUsd: room.rate * exchangeRate,
+        }));
+        
+        // Transform extras to include rateUsd
+        const transformedExtras = hotel.extras.map(extra => ({
+          ...extra,
+          rateUsd: extra.rate * exchangeRate,
+        }));
+        
         return {
           ...hotel,
           cityName: city ? city.name : hotel.city,
+          roomCategories: transformedRoomCategories,
+          extras: transformedExtras,
         };
       });
 
@@ -114,6 +130,9 @@ export const QuoteProvider = ({ children, exchangeRates = getExchangeRates() }: 
         hotels: transformedHotels,
         agentId: quote.agentId || null,
       };
+
+      // Debug: Log the transformed hotels to verify rateUsd is included
+      console.log('Transformed Hotels:', JSON.stringify(transformedHotels, null, 2));
 
       const response = await fetch('/api/quotes', {
         method: 'POST',

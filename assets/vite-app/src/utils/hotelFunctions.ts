@@ -15,9 +15,28 @@ export const addHotel = (cityId: string, hotels: Hotel[]): Hotel => {
 };
 
 export const updateHotel = (hotels: Hotel[], hotelId: string, field: string, value: any): Hotel[] => {
-  return hotels.map(hotel =>
-    hotel.id === hotelId ? { ...hotel, [field]: value } : hotel
-  );
+  return hotels.map(hotel => {
+    if (hotel.id !== hotelId) return hotel;
+    
+    // If exchangeRate is being updated, we need to update all rateUsd fields
+    if (field === 'exchangeRate') {
+      const exchangeRate = Number(value) || 1;
+      return {
+        ...hotel,
+        [field]: exchangeRate,
+        roomCategories: hotel.roomCategories.map(room => ({
+          ...room,
+          rateUsd: room.rate * exchangeRate
+        })),
+        extras: hotel.extras.map(extra => ({
+          ...extra,
+          rateUsd: extra.rate * exchangeRate
+        }))
+      };
+    }
+    
+    return { ...hotel, [field]: value };
+  });
 };
 
 export const removeHotel = (hotels: Hotel[], hotelId: string): Hotel[] => {
@@ -36,12 +55,16 @@ export const togglePrimaryHotel = (hotels: Hotel[], hotelId: string, cityId: str
 
 export const addRoomCategory = (hotels: Hotel[], hotelId: string): Hotel[] => {
   const defaultRoomName = 'Standard';
+  const hotel = hotels.find(h => h.id === hotelId);
+  const exchangeRate = hotel?.exchangeRate || 1;
+  
   const newCategory: RoomCategory = {
     id: generateUniqueId(),
     name: defaultRoomName,
     type: 'Double', // Default type
     category: defaultRoomName, // Initialize category with the same value as name
     rate: 0,
+    rateUsd: 0, // Will be calculated based on rate and exchange rate
     quantity: 1
   };
 
@@ -71,7 +94,9 @@ export const updateRoomCategory = (
                   ...(field === 'name' && !category.category ? { category: value } : {}),
                   // When updating the category, also update the type if it's empty
                   ...(field === 'category' && !category.type ? { type: value.toLowerCase() } : {}),
-                  [field]: field === 'rate' || field === 'quantity' ? Number(value) : value 
+                  [field]: field === 'rate' || field === 'quantity' ? Number(value) : value,
+                  // Update rateUsd when rate changes
+                  ...(field === 'rate' ? { rateUsd: Number(value) * (hotel.exchangeRate || 1) } : {})
                 }
               : category
           )
@@ -96,6 +121,7 @@ export const removeRoomCategory = (hotels: Hotel[], hotelId: string, categoryId:
 export const addRoomExtra = (hotels: Hotel[], hotelId: string, cities: any[] = []): Hotel[] => {
   // Find the hotel
   const hotel = hotels.find(h => h.id === hotelId);
+  const exchangeRate = hotel?.exchangeRate || 1;
   let nights = 1;
   
   // If hotel and cities are available, calculate the number of nights
@@ -111,8 +137,9 @@ export const addRoomExtra = (hotels: Hotel[], hotelId: string, cities: any[] = [
   
   const newExtra: RoomExtra = {
     id: generateUniqueId(),
-    name: '',
+    name: 'Extra',
     rate: 0,
+    rateUsd: 0, // Will be calculated based on rate and exchange rate
     quantity: 1,
     nights: nights
   };
@@ -137,8 +164,12 @@ export const updateRoomExtra = (
           ...hotel,
           extras: hotel.extras.map(extra =>
             extra.id === extraId
-              ? { ...extra, [field]: field === 'rate' || field === 'quantity' ? Number(value) : value }
-              : extra
+              ? {
+                ...extra,
+                [field]: field === 'rate' || field === 'quantity' || field === 'nights' ? Number(value) : value,
+                // Update rateUsd when rate changes
+                ...(field === 'rate' ? { rateUsd: Number(value) * (hotel.exchangeRate || 1) } : {})
+              }: extra
           )
         }
       : hotel

@@ -12,6 +12,7 @@ export interface RoomCategory {
   type: string;
   category?: string;
   rate: number;
+  rateUsd: number;
   quantity: number;
 }
 
@@ -19,6 +20,7 @@ export interface RoomExtra {
   id: string;
   name: string;
   rate: number;
+  rateUsd: number;
   quantity: number;
   nights: number;
 }

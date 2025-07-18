@@ -67,9 +67,14 @@ const HotelCard = ({
   
   // Calculate total cost in local currency and USD
   const totalCost = calculateHotelCost(hotel.id);
+  
+  // Get the current exchange rate for the hotel's currency
+  const currentRate = exchangeRates?.find(rate => rate.code === hotel.currency)?.rate || 1;
+  
+  // Calculate USD equivalent using the actual exchange rate from the backend
   const totalCostUSD = hotel.currency === 'USD' 
     ? totalCost 
-    : totalCost * (hotel.exchangeRate || 1);
+    : totalCost / currentRate;
   return (
     <Card className={hotel.isPrimary ? "border-2 border-travel-green" : ""}>
       <CardHeader className="pb-2">
@@ -100,10 +105,12 @@ const HotelCard = ({
                 exchangeRates={exchangeRates || []}
               />
             </div>
-            {hotel.currency && hotel.exchangeRate && (
+            {hotel.currency && (
               <div className="text-xs text-gray-500 whitespace-nowrap">
                 <span>exchange rate </span>
-                <span className="font-medium">{hotel.exchangeRate.toFixed(1)}</span>
+                <span className="font-medium">
+                  {exchangeRates?.find(rate => rate.code === hotel.currency)?.rate.toFixed(2) || '1.00'}
+                </span>
               </div>
             )}
           </div>
