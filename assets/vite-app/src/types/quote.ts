@@ -76,6 +76,7 @@ export interface CoachClass {
   currency: Currency;
   enabled: boolean;
   luxuryEdition: boolean;
+  entireRate: boolean;
 }
 
 export interface AirTransportDetails {
