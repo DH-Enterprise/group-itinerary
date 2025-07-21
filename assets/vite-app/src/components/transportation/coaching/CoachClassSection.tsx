@@ -14,9 +14,9 @@ interface CoachClassSectionProps {
 }
 
 const defaultCoachClasses: CoachClass[] = [
-  { id: '1', type: 'D', maxCapacity: 14, dailyRate: 540, currency: 'EUR', enabled: true },
-  { id: '2', type: 'F', maxCapacity: 30, dailyRate: 500, currency: 'EUR', enabled: false },
-  { id: '3', type: 'G', maxCapacity: 45, dailyRate: 400, currency: 'EUR', enabled: false },
+  { id: '1', type: 'D', maxCapacity: 14, dailyRate: 540, currency: 'EUR', enabled: true, luxuryEdition: false },
+  { id: '2', type: 'F', maxCapacity: 30, dailyRate: 500, currency: 'EUR', enabled: false, luxuryEdition: false },
+  { id: '3', type: 'G', maxCapacity: 45, dailyRate: 400, currency: 'EUR', enabled: false, luxuryEdition: false },
 ];
 
 const CoachClassSection: React.FC<CoachClassSectionProps> = ({
@@ -102,7 +102,7 @@ const CoachClassSection: React.FC<CoachClassSectionProps> = ({
             </div>
             
             {coachClass.enabled && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="space-y-2">
                   <Label>Type</Label>
                   <Select
@@ -120,6 +120,25 @@ const CoachClassSection: React.FC<CoachClassSectionProps> = ({
                   </Select>
                 </div>
                 
+                <div className="space-y-2">
+                  <Label className="invisible">Luxury</Label>
+                  <div className="flex items-center h-10">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`luxury-${coachClass.id}`}
+                        checked={coachClass.luxuryEdition}
+                        onCheckedChange={(checked) => 
+                          updateCoachClass(coachClass.id, 'luxuryEdition', checked)
+                        }
+                        className="mt-0"
+                      />
+                      <Label htmlFor={`luxury-${coachClass.id}`} className="text-sm font-medium leading-none">
+                        Luxury Edition (+)
+                      </Label>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="space-y-2">
                   <Label>Max Capacity</Label>
                   <Input

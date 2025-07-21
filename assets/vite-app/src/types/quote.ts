@@ -75,6 +75,7 @@ export interface CoachClass {
   dailyRate: number;
   currency: Currency;
   enabled: boolean;
+  luxuryEdition: boolean;
 }
 
 export interface AirTransportDetails {
