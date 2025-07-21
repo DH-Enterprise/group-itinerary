@@ -33,6 +33,9 @@ const DateAndCurrencySection: React.FC<DateAndCurrencySectionProps> = ({
     markupRate: 1.45,
     coachClasses: [],
     extras: [],
+    companyName: '',
+    companyContactEmail: '',
+    companyContactPhone: ''
   };
   
   // Update exchange rate when selected currency changes
@@ -142,6 +145,40 @@ const DateAndCurrencySection: React.FC<DateAndCurrencySectionProps> = ({
                 step="0.01"
                 value={coachingDetails.markupRate}
                 onChange={(e) => updateCoachingDetails('markupRate', parseFloat(e.target.value) || 0)}
+              />
+            </div>
+          </div>
+        </div>
+
+        <Separator />
+
+        <div className="space-y-4">
+          <div className="text-sm font-medium">Company Information</div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label>Company Name</Label>
+              <Input
+                value={coachingDetails.companyName || ''}
+                onChange={(e) => updateCoachingDetails('companyName', e.target.value)}
+                placeholder="Enter company name"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Contact Email</Label>
+              <Input
+                type="email"
+                value={coachingDetails.companyContactEmail || ''}
+                onChange={(e) => updateCoachingDetails('companyContactEmail', e.target.value)}
+                placeholder="contact@company.com"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Contact Phone</Label>
+              <Input
+                type="tel"
+                value={coachingDetails.companyContactPhone || ''}
+                onChange={(e) => updateCoachingDetails('companyContactPhone', e.target.value)}
+                placeholder="+1 (555) 123-4567"
               />
             </div>
           </div>
