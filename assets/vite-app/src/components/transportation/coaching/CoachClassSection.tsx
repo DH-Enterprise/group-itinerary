@@ -69,15 +69,18 @@ const CoachClassSection: React.FC<CoachClassSectionProps> = ({
     // If entireRate is true, don't multiply by driverDays
     const baseNetForeign = coachClass.entireRate ? dailyRate : dailyRate * driverDays;
     const baseUSDNet = baseNetForeign * exchangeRate;
+    
+    // If additionalServicesIncluded is true, don't add extras to the total
     const baseUSDSell = baseUSDNet * markupRate;
 
     // Get extras if they exist, otherwise use an empty array
     const extrasArray = coachingDetails.extras || [];
     
-    // Calculate extras total only if extras exist
-    const extrasTotal = extrasArray
-      .filter(extra => extra.enabled)
-      .reduce((sum, extra) => sum + ((extra.rate || 0) * (extra.days || 0)), 0);
+    // Calculate extras total only if extras exist and additionalServicesIncluded is false
+    const extrasTotal = coachClass.additionalServicesIncluded ? 0 : 
+      extrasArray
+        .filter(extra => extra.enabled)
+        .reduce((sum, extra) => sum + ((extra.rate || 0) * (extra.days || 0)), 0);
 
     return {
       netForeign: baseNetForeign,
@@ -163,7 +166,7 @@ const CoachClassSection: React.FC<CoachClassSectionProps> = ({
 
                 <div className="space-y-2">
                   <Label className="invisible">Rate Type</Label>
-                  <div className="flex items-center h-10">
+                  <div className="flex flex-col space-y-2">
                     <div className="flex items-center space-x-2">
                       <Switch
                         id={`entire-rate-${coachClass.id}`}
@@ -174,6 +177,18 @@ const CoachClassSection: React.FC<CoachClassSectionProps> = ({
                       />
                       <Label htmlFor={`entire-rate-${coachClass.id}`} className="text-sm">
                         Entire Rate
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id={`additional-services-included-${coachClass.id}`}
+                        checked={coachClass.additionalServicesIncluded || false}
+                        onCheckedChange={(checked) => 
+                          updateCoachClass(coachClass.id, 'additionalServicesIncluded', checked)
+                        }
+                      />
+                      <Label htmlFor={`additional-services-included-${coachClass.id}`} className="text-sm">
+                        Services included
                       </Label>
                     </div>
                   </div>

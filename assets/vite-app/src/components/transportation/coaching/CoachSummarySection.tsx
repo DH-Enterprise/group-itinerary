@@ -74,7 +74,8 @@ const CoachSummarySection: React.FC<CoachSummarySectionProps> = ({ transport }) 
         
         totalForeignCurrency += dailyRate;
         
-        const baseNetForeign = dailyRate * driverDays;
+        // If entireRate is true, don't multiply by driverDays
+        const baseNetForeign = coachClass.entireRate ? dailyRate : dailyRate * driverDays;
         totalForeignNet += baseNetForeign;
         
         const baseUSDNet = baseNetForeign * exchangeRate;
@@ -84,26 +85,29 @@ const CoachSummarySection: React.FC<CoachSummarySectionProps> = ({ transport }) 
         totalUSDSell += baseUSDSell;
       });
 
-    // Add extras totals
-    extras
-      .filter(extra => extra.enabled)
-      .forEach((extra) => {
-        const { selectedCurrency, markupRate } = coachingDetails;
-        const exchangeRate = exchangeRates.find(rate => rate.code === selectedCurrency)?.rate || 1;
-        const extraRate = extra.rate || 0;
-        const extraDays = extra.days || 0;
-        
-        totalForeignCurrency += extraRate;
-        
-        const extraNetForeign = extraRate * extraDays;
-        totalForeignNet += extraNetForeign;
-        
-        const extraUSDNet = extraNetForeign * exchangeRate;
-        totalUSDNet += extraUSDNet;
-        
-        const extraUSDSell = extraUSDNet * markupRate;
-        totalUSDSell += extraUSDSell;
-      });
+    // Add extras totals - only for coach classes where additionalServicesIncluded is false
+    const coachClassesWithExtras = coachClasses.filter(cc => cc.enabled && !cc.additionalServicesIncluded);
+    if (coachClassesWithExtras.length > 0) {
+      extras
+        .filter(extra => extra.enabled)
+        .forEach((extra) => {
+          const { selectedCurrency, markupRate } = coachingDetails;
+          const exchangeRate = exchangeRates.find(rate => rate.code === selectedCurrency)?.rate || 1;
+          const extraRate = extra.rate || 0;
+          const extraDays = extra.days || 0;
+          
+          totalForeignCurrency += extraRate;
+          
+          const extraNetForeign = extraRate * extraDays;
+          totalForeignNet += extraNetForeign;
+          
+          const extraUSDNet = extraNetForeign * exchangeRate;
+          totalUSDNet += extraUSDNet;
+          
+          const extraUSDSell = extraUSDNet * markupRate;
+          totalUSDSell += extraUSDSell;
+        });
+    }
 
     return {
       totalForeignCurrency,
@@ -149,27 +153,28 @@ const CoachSummarySection: React.FC<CoachSummarySectionProps> = ({ transport }) 
             .map((coachClass) => {
               const totals = calculateTotals(coachClass);
               return (
-                <TableRow key={coachClass.id}>
-                  <TableCell>{coachClass.maxCapacity} Pax {coachClass.type} Class Coach</TableCell>
-                  <TableCell>{coachingDetails.driverDays} days at</TableCell>
-                  <TableCell className="text-right">{currencySymbol}{coachClass.dailyRate}</TableCell>
-                  <TableCell className="text-right">{currencySymbol}{totals.netForeign.toFixed(2)}</TableCell>
-                  <TableCell className="text-right">$ {totals.usdNet.toFixed(2)}</TableCell>
-                  <TableCell className="text-right font-medium">$ {totals.usdSell.toFixed(2)}</TableCell>
-                </TableRow>
+                <React.Fragment key={coachClass.id}>
+                  <TableRow>
+                    <TableCell>{coachClass.maxCapacity} Pax {coachClass.type} Class Coach</TableCell>
+                    <TableCell>{coachingDetails.driverDays} days at</TableCell>
+                    <TableCell className="text-right">{currencySymbol}{coachClass.dailyRate}</TableCell>
+                    <TableCell className="text-right">{currencySymbol}{totals.netForeign.toFixed(2)}</TableCell>
+                    <TableCell className="text-right">$ {totals.usdNet.toFixed(2)}</TableCell>
+                    <TableCell className="text-right font-medium">$ {totals.usdSell.toFixed(2)}</TableCell>
+                  </TableRow>
+                  {/* Additional Services for this coach class */}
+                  {!coachClass.additionalServicesIncluded && extras.filter(extra => extra.enabled).map((extra) => (
+                    <TableRow key={`${coachClass.id}-${extra.id}`} className="bg-muted/20">
+                      <TableCell colSpan={2} className="pl-8">+ {extra.name}</TableCell>
+                      <TableCell className="text-right">{extra.days} days at {currencySymbol}{extra.rate}</TableCell>
+                      <TableCell className="text-right">{currencySymbol}{(extra.rate * extra.days).toFixed(2)}</TableCell>
+                      <TableCell className="text-right">$ {(extra.rate * extra.days * coachingDetails.exchangeRate).toFixed(2)}</TableCell>
+                      <TableCell className="text-right">$ {(extra.rate * extra.days * coachingDetails.exchangeRate * coachingDetails.markupRate).toFixed(2)}</TableCell>
+                    </TableRow>
+                  ))}
+                </React.Fragment>
               );
           })}
-          {/* Additional Services */}
-          {extras.filter(extra => extra.enabled).map((extra) => (
-            <TableRow key={extra.id}>
-              <TableCell>{extra.name}</TableCell>
-              <TableCell>{extra.days} days at</TableCell>
-              <TableCell className="text-right">{currencySymbol}{extra.rate}</TableCell>
-              <TableCell className="text-right">{currencySymbol}{(extra.rate * extra.days).toFixed(2)}</TableCell>
-              <TableCell className="text-right">$ {(extra.rate * extra.days * coachingDetails.exchangeRate).toFixed(2)}</TableCell>
-              <TableCell className="text-right">$ {(extra.rate * extra.days * coachingDetails.exchangeRate * coachingDetails.markupRate).toFixed(2)}</TableCell>
-            </TableRow>
-          ))}
         </TableBody>
         <TableFooter>
           <TableRow className="border-t-2 border-gray-300">

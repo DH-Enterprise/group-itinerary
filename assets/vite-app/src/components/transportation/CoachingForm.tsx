@@ -15,9 +15,9 @@ const CoachingForm: React.FC<CoachingFormProps> = ({ transport, onUpdate }) => {
   // Initialize coachingDetails if it doesn't exist
   if (!transport.coachingDetails) {
     const defaultCoachClasses = [
-      { id: '1', type: 'D', maxCapacity: 14, dailyRate: 540, currency: 'EUR', enabled: true },
-      { id: '2', type: 'F', maxCapacity: 30, dailyRate: 500, currency: 'EUR', enabled: false },
-      { id: '3', type: 'G', maxCapacity: 45, dailyRate: 400, currency: 'EUR', enabled: false },
+      { id: '1', type: 'D', maxCapacity: 14, dailyRate: 540, currency: 'EUR', enabled: true, luxuryEdition: false, entireRate: false },
+      { id: '2', type: 'F', maxCapacity: 30, dailyRate: 500, currency: 'EUR', enabled: false, luxuryEdition: false, entireRate: false },
+      { id: '3', type: 'G', maxCapacity: 45, dailyRate: 400, currency: 'EUR', enabled: false, luxuryEdition: false, entireRate: false },
     ];
     
     const defaultExtras = [
@@ -39,6 +39,7 @@ const CoachingForm: React.FC<CoachingFormProps> = ({ transport, onUpdate }) => {
       markupRate: 1.45,
       coachClasses: defaultCoachClasses,
       extras: defaultExtras,
+      additionalServicesIncluded: false,
     });
   }
 
@@ -46,7 +47,9 @@ const CoachingForm: React.FC<CoachingFormProps> = ({ transport, onUpdate }) => {
     <div className="space-y-6">
       <DateAndCurrencySection transport={transport} onUpdate={onUpdate} />
       <CoachClassSection transport={transport} onUpdate={onUpdate} />
-      <AdditionalServicesSection transport={transport} onUpdate={onUpdate} />
+      {!transport.coachingDetails?.coachClasses?.some(cc => cc.enabled && cc.additionalServicesIncluded) && (
+        <AdditionalServicesSection transport={transport} onUpdate={onUpdate} />
+      )}
       <Card>
         <CardHeader>
           <CardTitle>Summary Review</CardTitle>
