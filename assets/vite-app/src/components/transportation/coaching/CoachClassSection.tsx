@@ -124,6 +124,7 @@ const CoachClassSection: React.FC<CoachClassSectionProps> = ({
                   <Label>Max Capacity</Label>
                   <Input
                     type="number"
+                    readOnly={true}
                     value={coachClass.maxCapacity}
                     onChange={(e) => updateCoachClass(coachClass.id, 'maxCapacity', parseInt(e.target.value) || 0)}
                   />

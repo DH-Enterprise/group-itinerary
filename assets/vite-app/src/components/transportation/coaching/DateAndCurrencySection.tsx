@@ -131,7 +131,8 @@ const DateAndCurrencySection: React.FC<DateAndCurrencySectionProps> = ({
                 type="number"
                 step="0.01"
                 value={coachingDetails.exchangeRate}
-                onChange={(e) => updateCoachingDetails('exchangeRate', parseFloat(e.target.value) || 0)}
+                readOnly={true}
+                className="bg-muted"
               />
             </div>
             <div className="space-y-2">
