@@ -85,10 +85,25 @@ export const QuoteProvider = ({ children, exchangeRates = getExchangeRates() }: 
       });
 
       // Transform transportation dates to Y-m-d strings in local timezone
-      const transformedTransportation = quote.transportation.map(transport => ({
-        ...transport,
-        date: transport.date ? formatLocalDate(transport.date) : transport.date,
-      }));
+      const transformedTransportation = quote.transportation.map(transport => {
+        const baseTransport = {
+          ...transport,
+          date: transport.date ? formatLocalDate(transport.date) : transport.date,
+        };
+
+        // For ground transportation, ensure driverDays is passed as 'days'
+        if (transport.type === 'coaching' && transport.coachingDetails) {
+          return {
+            ...baseTransport,
+            coachingDetails: {
+              ...transport.coachingDetails,
+              days: transport.coachingDetails.driverDays, // Add days field
+            },
+          };
+        }
+        
+        return baseTransport;
+      });
 
       // Transform hotels to include rateUsd for room categories and extras
       const transformedHotels = quote.hotels.map(hotel => {
