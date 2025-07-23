@@ -30,7 +30,6 @@ const DateAndCurrencySection: React.FC<DateAndCurrencySectionProps> = ({
     driverDays: 7,
     selectedCurrency: defaultCurrency,
     exchangeRate: defaultExchangeRate,
-    markupRate: 1.45,
     coachClasses: [],
     extras: [],
     companyName: '',
@@ -138,15 +137,7 @@ const DateAndCurrencySection: React.FC<DateAndCurrencySectionProps> = ({
                 className="bg-muted"
               />
             </div>
-            <div className="space-y-2">
-              <Label>Markup Rate</Label>
-              <Input 
-                type="number"
-                step="0.01"
-                value={coachingDetails.markupRate}
-                onChange={(e) => updateCoachingDetails('markupRate', parseFloat(e.target.value) || 0)}
-              />
-            </div>
+
           </div>
         </div>
 

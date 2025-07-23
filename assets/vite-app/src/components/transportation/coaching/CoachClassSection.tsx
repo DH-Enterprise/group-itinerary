@@ -33,7 +33,6 @@ const CoachClassSection: React.FC<CoachClassSectionProps> = ({
     driverDays: 7,
     selectedCurrency: defaultCurrency,
     exchangeRate: defaultExchangeRate,
-    markupRate: 1.45,
     coachClasses: defaultCoachClasses.map(cls => ({
       ...cls,
       currency: defaultCurrency,
@@ -63,15 +62,12 @@ const CoachClassSection: React.FC<CoachClassSectionProps> = ({
   };
 
   const calculateTotals = (coachClass: CoachClass) => {
-    const { driverDays, exchangeRate, markupRate } = coachingDetails;
+    const { driverDays, exchangeRate } = coachingDetails;
     const dailyRate = coachClass.dailyRate || 0;
     
     // If entireRate is true, don't multiply by driverDays
     const baseNetForeign = coachClass.entireRate ? dailyRate : dailyRate * driverDays;
-    const baseUSDNet = baseNetForeign * exchangeRate;
-    
-    // If additionalServicesIncluded is true, don't add extras to the total
-    const baseUSDSell = baseUSDNet * markupRate;
+    const usdNet = baseNetForeign * exchangeRate;
 
     // Get extras if they exist, otherwise use an empty array
     const extrasArray = coachingDetails.extras || [];
@@ -84,8 +80,8 @@ const CoachClassSection: React.FC<CoachClassSectionProps> = ({
 
     return {
       netForeign: baseNetForeign,
-      usdNet: baseUSDNet,
-      usdSell: baseUSDSell + extrasTotal
+      usdNet: usdNet,
+      usdSell: usdNet + extrasTotal
     };
   };
 

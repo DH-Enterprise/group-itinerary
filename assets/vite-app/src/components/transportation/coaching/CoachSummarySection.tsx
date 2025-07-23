@@ -31,13 +31,12 @@ const CoachSummarySection: React.FC<CoachSummarySectionProps> = ({ transport }) 
   const extras = coachingDetails.extras || [];
 
   const calculateTotals = (coachClass: CoachClass) => {
-    const { driverDays, selectedCurrency, markupRate } = coachingDetails;
+    const { driverDays, selectedCurrency } = coachingDetails;
     const dailyRate = coachClass.dailyRate || 0;
     const exchangeRate = exchangeRates.find(rate => rate.code === selectedCurrency)?.rate || 1;
     
     const baseNetForeign = dailyRate * driverDays;
-    const baseUSDNet = baseNetForeign * exchangeRate;
-    const baseUSDSell = baseUSDNet * markupRate;
+    const usdNet = baseNetForeign * exchangeRate;
 
     // Calculate extras total (already in USD)
     const extrasTotal = extras
@@ -46,8 +45,8 @@ const CoachSummarySection: React.FC<CoachSummarySectionProps> = ({ transport }) 
 
     return {
       netForeign: baseNetForeign,
-      usdNet: baseUSDNet,
-      usdSell: baseUSDSell + extrasTotal,
+      usdNet: usdNet,
+      usdSell: usdNet + extrasTotal,
     };
   };
 
