@@ -94,7 +94,9 @@ const CoachClassSection: React.FC<CoachClassSectionProps> = ({
         {coachClasses.map((coachClass) => (
           <div key={coachClass.id} className="space-y-4 border-b pb-4 last:border-0">
             <div className="flex items-center justify-between">
-              <Label className="text-lg font-semibold">Class {coachClass.type}</Label>
+              <Label className="text-lg font-semibold">
+                Class {coachClass.type}{coachClass.luxuryEdition ? '+' : ''}
+              </Label>
               <Checkbox
                 checked={coachClass.enabled}
                 onCheckedChange={(checked) => 
