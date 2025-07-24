@@ -71,6 +71,8 @@ export type Currency = 'EUR' | 'GBP';
 export interface CoachClass {
   id: string;
   type: 'D' | 'F' | 'G';
+  minTravelers: number;
+  maxTravelers: number;
   maxCapacity: number;
   dailyRate: number;
   currency: Currency;

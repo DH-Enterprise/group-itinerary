@@ -26,11 +26,17 @@ const DateAndCurrencySection: React.FC<DateAndCurrencySectionProps> = ({
   const defaultCurrency = 'EUR' as Currency;
   const defaultExchangeRate = exchangeRates.find(rate => rate.code === defaultCurrency)?.rate || 1.25;
   
+  const defaultCoachClasses = [
+    { id: '1', type: 'D', minTravelers: 10, maxTravelers: 14, maxCapacity: 14, dailyRate: 540, currency: defaultCurrency, enabled: true, luxuryEdition: false, entireRate: false },
+    { id: '2', type: 'F', minTravelers: 15, maxTravelers: 30, maxCapacity: 30, dailyRate: 500, currency: defaultCurrency, enabled: false, luxuryEdition: false, entireRate: false },
+    { id: '3', type: 'G', minTravelers: 31, maxTravelers: 45, maxCapacity: 45, dailyRate: 400, currency: defaultCurrency, enabled: false, luxuryEdition: false, entireRate: false },
+  ];
+  
   const coachingDetails = transport.coachingDetails || {
     driverDays: 7,
     selectedCurrency: defaultCurrency,
     exchangeRate: defaultExchangeRate,
-    coachClasses: [],
+    coachClasses: defaultCoachClasses,
     extras: [],
     companyName: '',
     companyContactEmail: '',

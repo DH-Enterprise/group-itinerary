@@ -4,7 +4,6 @@ import { useQuote } from '@/context/QuoteContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Transportation, CoachClass, Currency } from '@/types/quote';
@@ -15,9 +14,9 @@ interface CoachClassSectionProps {
 }
 
 const defaultCoachClasses: CoachClass[] = [
-  { id: '1', type: 'D', maxCapacity: 14, dailyRate: 540, currency: 'EUR', enabled: true, luxuryEdition: false, entireRate: false },
-  { id: '2', type: 'F', maxCapacity: 30, dailyRate: 500, currency: 'EUR', enabled: false, luxuryEdition: false, entireRate: false },
-  { id: '3', type: 'G', maxCapacity: 45, dailyRate: 400, currency: 'EUR', enabled: false, luxuryEdition: false, entireRate: false },
+  { id: '1', type: 'D', minTravelers: 10, maxTravelers: 14, maxCapacity: 14, dailyRate: 540, currency: 'EUR', enabled: true, luxuryEdition: false, entireRate: false },
+  { id: '2', type: 'F', minTravelers: 15, maxTravelers: 30, maxCapacity: 30, dailyRate: 500, currency: 'EUR', enabled: false, luxuryEdition: false, entireRate: false },
+  { id: '3', type: 'G', minTravelers: 31, maxTravelers: 45, maxCapacity: 45, dailyRate: 400, currency: 'EUR', enabled: false, luxuryEdition: false, entireRate: false },
 ];
 
 const CoachClassSection: React.FC<CoachClassSectionProps> = ({
@@ -40,11 +39,45 @@ const CoachClassSection: React.FC<CoachClassSectionProps> = ({
     extras: [], 
   };
 
+  // Helper function to format traveler range text
+  const formatTravelerRange = (min: number | undefined, max: number | undefined): string => {
+    console.log('Formatting range with min:', min, 'max:', max);
+    if (min === undefined || max === undefined) {
+      return 'Traveler range not specified';
+    }
+    return `${min}-${max} travelers`;
+  };
+
   // Safely access coach classes or use defaults
-  const coachClasses = coachingDetails.coachClasses || defaultCoachClasses;
+  const coachClasses = (coachingDetails.coachClasses && coachingDetails.coachClasses.length > 0) 
+    ? coachingDetails.coachClasses 
+    : defaultCoachClasses;
+  
+  // Ensure all coach classes have the required fields
+  const normalizedCoachClasses = coachClasses.map(cls => ({
+    ...cls,
+    minTravelers: cls.minTravelers ?? (() => {
+      switch(cls.type) {
+        case 'D': return 10;
+        case 'F': return 15;
+        case 'G': return 31;
+        default: return 0;
+      }
+    })(),
+    maxTravelers: cls.maxTravelers ?? (() => {
+      switch(cls.type) {
+        case 'D': return 14;
+        case 'F': return 30;
+        case 'G': return 45;
+        default: return 0;
+      }
+    })()
+  }));
+  
+  console.log('Normalized coach classes:', JSON.stringify(normalizedCoachClasses, null, 2));
 
   const updateCoachClass = (classId: string, field: string, value: any) => {
-    const newClasses = coachClasses.map(cc => 
+    const newClasses = normalizedCoachClasses.map(cc => 
       cc.id === classId ? { ...cc, [field]: value } : cc
     );
     
@@ -91,12 +124,17 @@ const CoachClassSection: React.FC<CoachClassSectionProps> = ({
         <CardTitle>Coach Classes</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        {coachClasses.map((coachClass) => (
+        {normalizedCoachClasses.map((coachClass) => (
           <div key={coachClass.id} className="space-y-4 border-b pb-4 last:border-0">
             <div className="flex items-center justify-between">
-              <Label className="text-lg font-semibold">
-                Class {coachClass.type}{coachClass.luxuryEdition ? '+' : ''}
-              </Label>
+              <div className="flex flex-col">
+                <Label className="text-lg font-semibold">
+                  Class {coachClass.type}{coachClass.luxuryEdition ? '+' : ''}
+                </Label>
+                <span className="text-sm text-muted-foreground">
+                  {formatTravelerRange(coachClass.minTravelers, coachClass.maxTravelers)}
+                </span>
+              </div>
               <Checkbox
                 checked={coachClass.enabled}
                 onCheckedChange={(checked) => 
