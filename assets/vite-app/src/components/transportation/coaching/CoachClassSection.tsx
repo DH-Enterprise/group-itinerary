@@ -104,23 +104,7 @@ const CoachClassSection: React.FC<CoachClassSectionProps> = ({
             </div>
             
             {coachClass.enabled && (
-              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                <div className="space-y-2">
-                  <Label>Type</Label>
-                  <Select
-                    value={coachClass.type}
-                    onValueChange={(value) => updateCoachClass(coachClass.id, 'type', value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="D">Class D (14 seats)</SelectItem>
-                      <SelectItem value="F">Class F (30 seats)</SelectItem>
-                      <SelectItem value="G">Class G (45 seats)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 
                 <div className="space-y-2">
                   <Label className="invisible">Luxury</Label>

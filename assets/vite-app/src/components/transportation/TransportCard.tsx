@@ -79,8 +79,7 @@ const TransportCard: React.FC<TransportCardProps> = ({
         )}
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div className="space-y-2">
             <Label htmlFor={`transport-from-${transport.id}`}>From</Label>
             <Input
@@ -91,7 +90,7 @@ const TransportCard: React.FC<TransportCardProps> = ({
             />
           </div>
           
-          <div className="space-y-2 md:col-span-2">
+          <div className="space-y-2">
             <Label htmlFor={`transport-to-${transport.id}`}>To</Label>
             <Input
               id={`transport-to-${transport.id}`}
