@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { Transportation, Currency } from '@/types/quote';
-import { useQuote } from '@/context/QuoteContext';
+import { useQuote, Quote } from '@/context/QuoteContext';
 
 interface DateAndCurrencySectionProps {
   transport: Transportation;
@@ -22,7 +22,7 @@ const DateAndCurrencySection: React.FC<DateAndCurrencySectionProps> = ({
   transport,
   onUpdate,
 }) => {
-  const { exchangeRates } = useQuote();
+  const { exchangeRates, quote } = useQuote();
   const defaultCurrency = 'EUR' as Currency;
   const defaultExchangeRate = exchangeRates.find(rate => rate.code === defaultCurrency)?.rate || 1.25;
   
@@ -52,6 +52,44 @@ const DateAndCurrencySection: React.FC<DateAndCurrencySectionProps> = ({
       }
     }
   }, [coachingDetails.selectedCurrency, exchangeRates]);
+
+  // Preselect coach classes based on selected group ranges
+  useEffect(() => {
+    if (quote.groupType !== 'speculative' || !coachingDetails?.coachClasses) return;
+
+    const selectedRanges = quote.groupRanges?.filter(range => range.selected) || [];
+    if (selectedRanges.length === 0) return;
+
+    // Map of coach class types to their min/max traveler ranges
+    const coachClassRanges = {
+      'D': { min: 10, max: 19 },
+      'F': { min: 15, max: 30 },
+      'G': { min: 31, max: 45 }
+    };
+
+    // Check if any selected group range falls within each coach class range
+    const updatedClasses = coachingDetails.coachClasses.map(coachClass => {
+      const classRange = coachClassRanges[coachClass.type as keyof typeof coachClassRanges];
+      if (!classRange) return coachClass;
+
+      // Enable the coach class if any selected group range falls within its range
+      const shouldEnable = selectedRanges.some(range => 
+        (range.min >= classRange.min && range.min <= classRange.max) ||
+        (range.max >= classRange.min && range.max <= classRange.max) ||
+        (range.min <= classRange.min && range.max >= classRange.max)
+      );
+
+      return {
+        ...coachClass,
+        enabled: shouldEnable
+      };
+    });
+
+    // Only update if there are changes to prevent infinite loops
+    if (JSON.stringify(updatedClasses) !== JSON.stringify(coachingDetails.coachClasses)) {
+      updateCoachingDetails('coachClasses', updatedClasses);
+    }
+  }, [quote.groupRanges, quote.groupType, coachingDetails]);
 
   const updateCoachingDetails = (field: string, value: any) => {
     const newDetails = {
