@@ -126,7 +126,14 @@ const CoachClassSection: React.FC<CoachClassSectionProps> = ({
       <CardContent className="space-y-6">
         {normalizedCoachClasses.map((coachClass) => (
           <div key={coachClass.id} className="space-y-4 border-b pb-4 last:border-0">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Checkbox
+                checked={coachClass.enabled}
+                onCheckedChange={(checked) => 
+                  updateCoachClass(coachClass.id, 'enabled', checked)
+                }
+                className="mt-0"
+              />
               <div className="flex flex-col">
                 <Label className="text-lg font-semibold">
                   Class {coachClass.type}{coachClass.luxuryEdition ? '+' : ''}
@@ -135,12 +142,6 @@ const CoachClassSection: React.FC<CoachClassSectionProps> = ({
                   {formatTravelerRange(coachClass.minTravelers, coachClass.maxTravelers)}
                 </span>
               </div>
-              <Checkbox
-                checked={coachClass.enabled}
-                onCheckedChange={(checked) => 
-                  updateCoachClass(coachClass.id, 'enabled', checked)
-                }
-              />
             </div>
             
             {coachClass.enabled && (
