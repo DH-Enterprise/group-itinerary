@@ -48,6 +48,21 @@ const CoachClassSection: React.FC<CoachClassSectionProps> = ({
     return `${min}-${max} travelers`;
   };
 
+  // Initialize with default coach classes if not present
+  useEffect(() => {
+    if (!transport.coachingDetails?.coachClasses) {
+      const classesWithTotalCost = defaultCoachClasses.map(coachClass => ({
+        ...coachClass,
+        totalCost: calculateCoachClassTotal(coachClass, {
+          ...coachingDetails,
+          driverDays: coachingDetails.driverDays || 7,
+          exchangeRate: coachingDetails.exchangeRate || 1.25
+        })
+      }));
+      updateCoachingDetails('coachClasses', classesWithTotalCost);
+    }
+  }, []);
+
   // Safely access coach classes or use defaults
   const coachClasses = (coachingDetails.coachClasses && coachingDetails.coachClasses.length > 0) 
     ? coachingDetails.coachClasses 
@@ -86,12 +101,35 @@ const CoachClassSection: React.FC<CoachClassSectionProps> = ({
 
   const updateCoachingDetails = (field: string, value: any) => {
     // Create a complete new details object preserving ALL existing properties
-    const newDetails = {
+    let newDetails = {
       ...coachingDetails,
       [field]: value,
     };
     
+    // Always update totalCost for all coach classes when driverDays or exchangeRate changes
+    if (field === 'driverDays' || field === 'exchangeRate' || field === 'coachClasses') {
+      newDetails = {
+        ...newDetails,
+        coachClasses: (newDetails.coachClasses || []).map((coachClass: any) => ({
+          ...coachClass,
+          totalCost: calculateCoachClassTotal(coachClass, newDetails)
+        }))
+      };
+    }
+    
     onUpdate(transport.id, 'coachingDetails', newDetails);
+  };
+  
+  // Calculate total cost for a coach class considering exchange rate, daily rate, days, and entireRate flag
+  const calculateCoachClassTotal = (coachClass: any, details: any) => {
+    const { driverDays = 1, exchangeRate = 1 } = details || {};
+    const dailyRate = coachClass.dailyRate || 0;
+    
+    // If entireRate is true, use the daily rate as is, otherwise multiply by number of days
+    const baseAmount = coachClass.entireRate ? dailyRate : dailyRate * driverDays;
+    
+    // Convert to USD using exchange rate
+    return baseAmount * exchangeRate;
   };
 
   const calculateTotals = (coachClass: CoachClass) => {
