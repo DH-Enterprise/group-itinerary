@@ -38,15 +38,9 @@ const CoachSummarySection: React.FC<CoachSummarySectionProps> = ({ transport }) 
     const baseNetForeign = dailyRate * driverDays;
     const usdNet = baseNetForeign * exchangeRate;
 
-    // Calculate extras total (already in USD)
-    const extrasTotal = extras
-      .filter(extra => extra.enabled)
-      .reduce((sum, extra) => sum + ((extra.rate || 0) * (extra.days || 0)), 0);
-
     return {
       netForeign: baseNetForeign,
       usdNet: usdNet,
-      usdSell: usdNet + extrasTotal,
     };
   };
 
@@ -60,7 +54,6 @@ const CoachSummarySection: React.FC<CoachSummarySectionProps> = ({ transport }) 
     let totalForeignCurrency = 0;
     let totalForeignNet = 0;
     let totalUSDNet = 0;
-    let totalUSDSell = 0;
 
     // Add coach class totals
     coachClasses
@@ -80,8 +73,7 @@ const CoachSummarySection: React.FC<CoachSummarySectionProps> = ({ transport }) 
         const baseUSDNet = baseNetForeign * exchangeRate;
         totalUSDNet += baseUSDNet;
         
-        const baseUSDSell = baseUSDNet * markupRate;
-        totalUSDSell += baseUSDSell;
+
       });
 
     // Add extras totals - only for coach classes where additionalServicesIncluded is false
@@ -103,8 +95,7 @@ const CoachSummarySection: React.FC<CoachSummarySectionProps> = ({ transport }) 
           const extraUSDNet = extraNetForeign * exchangeRate;
           totalUSDNet += extraUSDNet;
           
-          const extraUSDSell = extraUSDNet * markupRate;
-          totalUSDSell += extraUSDSell;
+
         });
     }
 
@@ -112,21 +103,21 @@ const CoachSummarySection: React.FC<CoachSummarySectionProps> = ({ transport }) 
       totalForeignCurrency,
       totalForeignNet,
       totalUSDNet,
-      totalUSDSell,
+
     };
   };
 
   const summaryTotals = calculateSummaryTotals();
 
-  // Update the transport cost with the calculated total
-  if (transport.cost !== summaryTotals.totalUSDSell) {
+  // Update the transport cost with the calculated total (using USD Net as the cost)
+  if (transport.cost !== summaryTotals.totalUSDNet) {
     // We need to use setTimeout to avoid modifying props directly during render
     setTimeout(() => {
       // This is a bit of a hack, but it helps ensure the total cost is reflected in the transportation summary
       const transportEvent = new CustomEvent('update-transport-cost', { 
         detail: { 
           id: transport.id, 
-          cost: summaryTotals.totalUSDSell
+          cost: summaryTotals.totalUSDNet
         } 
       });
       document.dispatchEvent(transportEvent);
@@ -143,7 +134,6 @@ const CoachSummarySection: React.FC<CoachSummarySectionProps> = ({ transport }) 
             <TableHead className="text-right">{coachingDetails.selectedCurrency}</TableHead>
             <TableHead className="text-right">{coachingDetails.selectedCurrency} NET</TableHead>
             <TableHead className="text-right">USD NET</TableHead>
-            <TableHead className="text-right">USD SELL</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -159,7 +149,7 @@ const CoachSummarySection: React.FC<CoachSummarySectionProps> = ({ transport }) 
                     <TableCell className="text-right">{currencySymbol}{coachClass.dailyRate}</TableCell>
                     <TableCell className="text-right">{currencySymbol}{totals.netForeign.toFixed(2)}</TableCell>
                     <TableCell className="text-right">$ {totals.usdNet.toFixed(2)}</TableCell>
-                    <TableCell className="text-right font-medium">$ {totals.usdSell.toFixed(2)}</TableCell>
+
                   </TableRow>
                   {/* Additional Services for this coach class */}
                   {!coachClass.additionalServicesIncluded && extras.filter(extra => extra.enabled).map((extra) => (
@@ -168,7 +158,7 @@ const CoachSummarySection: React.FC<CoachSummarySectionProps> = ({ transport }) 
                       <TableCell className="text-right">{extra.days} days at {currencySymbol}{extra.rate}</TableCell>
                       <TableCell className="text-right">{currencySymbol}{(extra.rate * extra.days).toFixed(2)}</TableCell>
                       <TableCell className="text-right">$ {(extra.rate * extra.days * coachingDetails.exchangeRate).toFixed(2)}</TableCell>
-                      <TableCell className="text-right">$ {(extra.rate * extra.days * coachingDetails.exchangeRate * coachingDetails.markupRate).toFixed(2)}</TableCell>
+
                     </TableRow>
                   ))}
                 </React.Fragment>
@@ -181,7 +171,7 @@ const CoachSummarySection: React.FC<CoachSummarySectionProps> = ({ transport }) 
             <TableCell className="text-right font-bold">{currencySymbol}{summaryTotals.totalForeignCurrency.toFixed(2)}</TableCell>
             <TableCell className="text-right font-bold">{currencySymbol}{summaryTotals.totalForeignNet.toFixed(2)}</TableCell>
             <TableCell className="text-right font-bold">$ {summaryTotals.totalUSDNet.toFixed(2)}</TableCell>
-            <TableCell className="text-right font-bold">$ {summaryTotals.totalUSDSell.toFixed(2)}</TableCell>
+
           </TableRow>
         </TableFooter>
       </Table>
