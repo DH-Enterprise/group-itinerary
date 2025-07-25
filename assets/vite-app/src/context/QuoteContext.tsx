@@ -183,6 +183,53 @@ export const QuoteProvider = ({ children, exchangeRates = getExchangeRates() }: 
   };
 
   const loadSampleQuote = () => {
+    // Default coaching details for ground transport
+    const defaultCoachingDetails = {
+      driverDays: 1,
+      selectedCurrency: 'EUR' as const,
+      exchangeRate: 1.0,
+      markupRate: 0,
+      extras: [],
+      coachClasses: [
+        {
+          id: '1',
+          type: 'D' as const,
+          minTravelers: 10,
+          maxTravelers: 14,
+          maxCapacity: 14,
+          dailyRate: 540,
+          currency: 'EUR' as const,
+          enabled: true,
+          luxuryEdition: false,
+          entireRate: false
+        },
+        {
+          id: '2',
+          type: 'F' as const,
+          minTravelers: 15,
+          maxTravelers: 30,
+          maxCapacity: 30,
+          dailyRate: 500,
+          currency: 'EUR' as const,
+          enabled: false,
+          luxuryEdition: false,
+          entireRate: false
+        },
+        {
+          id: '3',
+          type: 'G' as const,
+          minTravelers: 31,
+          maxTravelers: 45,
+          maxCapacity: 45,
+          dailyRate: 400,
+          currency: 'EUR' as const,
+          enabled: false,
+          luxuryEdition: false,
+          entireRate: false
+        }
+      ]
+    };
+
     // Clone the sample quote to avoid mutating the original
     const quoteWithTravelerCounts = {
       ...sampleQuote,
@@ -192,7 +239,59 @@ export const QuoteProvider = ({ children, exchangeRates = getExchangeRates() }: 
         ...(activity.perPerson && !activity.travelerCount && {
           travelerCount: sampleQuote.travelerCount || 1
         })
-      }))
+      })),
+      // Transform hotels to include rateUsd for room categories and extras, and add nights for extras
+      hotels: sampleQuote.hotels.map(hotel => {
+        const exchangeRate = hotel.exchangeRate || 1;
+        const city = sampleQuote.cities.find(c => c.id === hotel.city);
+        
+        // Calculate number of nights from check-in to check-out
+        const nights = city ? Math.ceil((city.checkOut.getTime() - city.checkIn.getTime()) / (1000 * 60 * 60 * 24)) : 1;
+        
+        // Transform room categories to include rateUsd
+        const transformedRoomCategories = hotel.roomCategories.map(room => ({
+          ...room,
+          rateUsd: room.rate * exchangeRate,
+        }));
+        
+        // Transform extras to include rateUsd and nights
+        const transformedExtras = (hotel.extras || []).map(extra => ({
+          ...extra,
+          rateUsd: extra.rate * exchangeRate,
+          nights: extra.nights || nights, // Use existing nights if set, otherwise calculate
+        }));
+        
+        return {
+          ...hotel,
+          roomCategories: transformedRoomCategories,
+          extras: transformedExtras,
+        };
+      }),
+      // Add coachingDetails to ground transport entries
+      transportation: sampleQuote.transportation.map(transport => {
+        if (transport.type === 'coaching') {
+          const exchangeRate = transport.to === 'Galway' || transport.to === 'Dublin' ? 1.0 : 0.85;
+          const driverDays = transport.details?.includes('hour') ? 1 : 0.5; // Simple heuristic based on journey duration
+          
+          return {
+            ...transport,
+            coachingDetails: {
+              ...defaultCoachingDetails,
+              driverDays,
+              exchangeRate,
+              // Update coach classes with totalCost
+              coachClasses: defaultCoachingDetails.coachClasses.map(coachClass => ({
+                ...coachClass,
+                // Calculate totalCost: dailyRate * (entireRate ? 1 : driverDays) * exchangeRate
+                totalCost: coachClass.dailyRate * 
+                          (coachClass.entireRate ? 1 : driverDays) * 
+                          exchangeRate
+              }))
+            }
+          };
+        }
+        return transport;
+      })
     };
     
     setQuote(quoteWithTravelerCounts);
