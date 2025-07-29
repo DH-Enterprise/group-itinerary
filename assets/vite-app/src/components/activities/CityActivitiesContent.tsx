@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 import { Map, Plus, CalendarDays } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Activity, City } from '@/types/quote';
+import { Activity, City, Quote } from '@/types/quote';
 import { formatCurrency } from '@/utils/quoteUtils';
 import DailyActivitiesTab from './DailyActivitiesTab';
 
@@ -22,7 +22,29 @@ interface CityActivitiesContentProps {
   removeActivity: (id: string) => void;
   calculateActivityTotalCost: (activity: Activity) => number;
   exchangeRates: ExchangeRate[];
+  quote: Quote;
 }
+
+// Helper function to calculate total cost of activities
+const calculateTotalActivitiesCost = (
+  activities: Activity[], 
+  quote: Quote, 
+  defaultTravelerCount: number
+): number => {
+  return activities.reduce((sum, activity) => {
+    const baseCost = activity.costUSD || 0;
+    if (!activity.perPerson) return sum + baseCost;
+    
+    if (quote.groupType === 'known') {
+      const count = activity.travelerCount !== undefined ? activity.travelerCount : defaultTravelerCount;
+      return sum + (baseCost * count);
+    } else {
+      // For speculative groups, use the minimum of the selected ranges
+      const selectedRange = quote.groupRanges.find(range => range.selected);
+      return sum + (selectedRange ? baseCost * selectedRange.min : baseCost);
+    }
+  }, 0);
+};
 
 const CityActivitiesContent = ({ 
   city, 
@@ -32,7 +54,8 @@ const CityActivitiesContent = ({
   updateActivity, 
   removeActivity,
   calculateActivityTotalCost,
-  exchangeRates
+  exchangeRates,
+  quote
 }: CityActivitiesContentProps) => {
   const [activeDay, setActiveDay] = useState<string>('all');
 
@@ -74,9 +97,8 @@ const CityActivitiesContent = ({
           <div>
             <h3 className="text-lg font-semibold">{city.name}, {city.country}</h3>
             <p className="text-sm text-gray-500">
-              {cityActivities.length} activities ({formatCurrency(
-                cityActivities.reduce((sum, activity) => 
-                  sum + calculateActivityTotalCost(activity), 0)
+              {cityActivities.length} activities (${formatCurrency(
+                calculateTotalActivitiesCost(cityActivities, quote, travelerCount)
               )})
             </p>
           </div>

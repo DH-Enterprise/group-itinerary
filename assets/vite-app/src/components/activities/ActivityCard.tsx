@@ -193,7 +193,7 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount,
           </Button>
         </div>
         <CardDescription>
-          {format(activity.date, 'EEEE, MMMM d, yyyy')} • {formatCurrency(totalCost)}
+          {format(activity.date, 'EEEE, MMMM d, yyyy')} • ${formatCurrency(totalCost)}
           {activity.perPerson && (
             quote.groupType === 'known' 
               ? ` • ${activity.travelerCount || travelerCount} travelers`
@@ -327,18 +327,18 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount,
               Cost (USD)
             </Label>
             <div className="relative">
-              <Input
-                  id={`activity-cost-usd-${activity.id}`}
-                  type="number"
-                  step="0.01"
-                  value={activity.costUSD?.toFixed(2) || '0.00'}
-                  readOnly
-                  placeholder="0.00"
-                  className="pr-10 bg-gray-100"
-              />
-              <span className="absolute right-2 top-2.5 text-sm text-muted-foreground">
-                = {activity.costUSD?.toFixed(2)} USD
-              </span>
+              <div className="relative">
+                <span className="absolute left-3 top-2.5 text-sm text-muted-foreground">$</span>
+                <Input
+                    id={`activity-cost-usd-${activity.id}`}
+                    type="number"
+                    step="0.01"
+                    value={activity.costUSD?.toFixed(2) || '0.00'}
+                    readOnly
+                    placeholder="0.00"
+                    className="pl-6 pr-10 bg-gray-100"
+                />
+              </div>
             </div>
           </div>
 
@@ -566,7 +566,7 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount,
                         : 'Group rate'}
                 </div>
                 <div className="font-medium">
-                  Total: {formatCurrency(totalCost)}
+                  Total: ${formatCurrency(totalCost)}
                 </div>
               </div>
             ) : (
@@ -583,7 +583,7 @@ const ActivityCard = ({ activity, updateActivity, removeActivity, travelerCount,
                         : item.label}
                     </div>
                     <div className="font-medium">
-                      Total: {formatCurrency(item.cost || 0)}
+                      Total: ${formatCurrency(item.cost || 0)}
                     </div>
                   </div>
                 ))

@@ -1,12 +1,6 @@
 
 import { City, Quote, Hotel, Activity, Transportation } from "@/types/quote";
 
-export const calculateTripDuration = (startDate: Date, endDate: Date): number => {
-  const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  return diffDays;
-};
-
 export const calculateNightsInCity = (checkIn: Date, checkOut: Date): number => {
   const diffTime = Math.abs(checkOut.getTime() - checkIn.getTime());
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -31,9 +25,15 @@ export const calculateTotalAccommodationCost = (hotels: Hotel[]): number => {
         0
       );
       
-      // Convert to USD using the hotel's exchange rate if available, otherwise use as is (assumed to be USD)
+      // Calculate total in local currency
+      const totalInLocal = roomCategoriesCost + extrasCost;
+      
+      // If currency is USD or no exchange rate is set, use the amount as is
+      // Otherwise, multiply by exchange rate to convert to USD
       const exchangeRate = hotel.exchangeRate || 1;
-      const totalInUSD = (roomCategoriesCost + extrasCost) * exchangeRate;
+      const totalInUSD = hotel.currency === 'USD' || !hotel.exchangeRate
+        ? totalInLocal 
+        : totalInLocal * exchangeRate;
       
       return total + totalInUSD;
     }, 0);

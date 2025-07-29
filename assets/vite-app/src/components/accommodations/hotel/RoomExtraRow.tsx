@@ -74,6 +74,11 @@ const RoomExtraRow = ({
               className="pl-6"
             />
           </div>
+          {currency !== 'USD' && exchangeRate && (
+            <p className="text-xs text-gray-500">
+              {getCurrencySymbol('USD')}{formatCurrency(extra.rate * exchangeRate)}
+            </p>
+          )}
         </div>
       </div>
       
@@ -106,29 +111,22 @@ const RoomExtraRow = ({
       </div>
       
       <div className="flex flex-col">
-        <Label htmlFor={`extra-total-${extra.id}`} className="text-xs">Total (USD)</Label>
+        <Label htmlFor={`extra-total-${extra.id}`} className="text-xs">Total ({currency})</Label>
         <div className="w-full md:w-36 mt-1">
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <span className="text-gray-500 text-sm">
-                {getCurrencySymbol('USD')}
+                {getCurrencySymbol(currency)}
               </span>
             </div>
             <Input
               id={`extra-total-${extra.id}`}
               type="text"
-              value={formatCurrency(usdTotal)}
+              value={formatCurrency(total)}
               readOnly
               className="pl-6 bg-gray-50"
             />
           </div>
-          {showUsdTotal && (
-            <div className="h-5">
-              <p className="text-xs text-gray-500">
-                {getCurrencySymbol(currency)}{formatCurrency(total)}
-              </p>
-            </div>
-          )}
         </div>
       </div>
       <div className="flex items-end">

@@ -65,16 +65,16 @@ const HotelCard = ({
     }
   };
   
-  // Calculate total cost in local currency and USD
+  // Calculate total cost in local currency
   const totalCost = calculateHotelCost(hotel.id);
   
   // Get the current exchange rate for the hotel's currency
   const currentRate = exchangeRates?.find(rate => rate.code === hotel.currency)?.rate || 1;
   
-  // Calculate USD equivalent using the actual exchange rate from the backend
+  // Calculate USD equivalent - if currency is not USD, multiply by the exchange rate
   const totalCostUSD = hotel.currency === 'USD' 
     ? totalCost 
-    : totalCost / currentRate;
+    : totalCost * currentRate;
   return (
     <Card className={hotel.isPrimary ? "border-2 border-travel-green" : ""}>
       <CardHeader className="pb-2">

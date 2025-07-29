@@ -5,7 +5,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Building } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { calculateNightsInCity } from '@/utils/quoteUtils';
-import { useQuote } from '@/context/QuoteContext';
 import CityTabContent from './CityTabContent';
 
 interface AccommodationCityTabsProps {
