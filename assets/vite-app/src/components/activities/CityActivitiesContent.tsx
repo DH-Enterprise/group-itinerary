@@ -74,7 +74,7 @@ const CityActivitiesContent = ({
           <div>
             <h3 className="text-lg font-semibold">{city.name}, {city.country}</h3>
             <p className="text-sm text-gray-500">
-              {cityActivities.length} activities ({formatCurrency(
+              {cityActivities.length} activities (${formatCurrency(
                 cityActivities.reduce((sum, activity) => 
                   sum + calculateActivityTotalCost(activity), 0)
               )})
