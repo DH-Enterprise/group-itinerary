@@ -4,7 +4,7 @@ import { useQuote } from '@/context/QuoteContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Transportation, CoachClass, Currency } from '@/types/quote';
 
@@ -14,9 +14,9 @@ interface CoachClassSectionProps {
 }
 
 const defaultCoachClasses: CoachClass[] = [
-  { id: '1', type: 'D', maxCapacity: 14, dailyRate: 540, currency: 'EUR', enabled: true },
-  { id: '2', type: 'F', maxCapacity: 30, dailyRate: 500, currency: 'EUR', enabled: false },
-  { id: '3', type: 'G', maxCapacity: 45, dailyRate: 400, currency: 'EUR', enabled: false },
+  { id: '1', type: 'D', minTravelers: 10, maxTravelers: 14, maxCapacity: 14, dailyRate: 540, currency: 'EUR', enabled: true, luxuryEdition: false, entireRate: false },
+  { id: '2', type: 'F', minTravelers: 15, maxTravelers: 30, maxCapacity: 30, dailyRate: 500, currency: 'EUR', enabled: false, luxuryEdition: false, entireRate: false },
+  { id: '3', type: 'G', minTravelers: 31, maxTravelers: 45, maxCapacity: 45, dailyRate: 400, currency: 'EUR', enabled: false, luxuryEdition: false, entireRate: false },
 ];
 
 const CoachClassSection: React.FC<CoachClassSectionProps> = ({
@@ -32,7 +32,6 @@ const CoachClassSection: React.FC<CoachClassSectionProps> = ({
     driverDays: 7,
     selectedCurrency: defaultCurrency,
     exchangeRate: defaultExchangeRate,
-    markupRate: 1.45,
     coachClasses: defaultCoachClasses.map(cls => ({
       ...cls,
       currency: defaultCurrency,
@@ -40,11 +39,60 @@ const CoachClassSection: React.FC<CoachClassSectionProps> = ({
     extras: [], 
   };
 
+  // Helper function to format traveler range text
+  const formatTravelerRange = (min: number | undefined, max: number | undefined): string => {
+    console.log('Formatting range with min:', min, 'max:', max);
+    if (min === undefined || max === undefined) {
+      return 'Traveler range not specified';
+    }
+    return `${min}-${max} travelers`;
+  };
+
+  // Initialize with default coach classes if not present
+  useEffect(() => {
+    if (!transport.coachingDetails?.coachClasses) {
+      const classesWithTotalCost = defaultCoachClasses.map(coachClass => ({
+        ...coachClass,
+        totalCost: calculateCoachClassTotal(coachClass, {
+          ...coachingDetails,
+          driverDays: coachingDetails.driverDays || 7,
+          exchangeRate: coachingDetails.exchangeRate || 1.25
+        })
+      }));
+      updateCoachingDetails('coachClasses', classesWithTotalCost);
+    }
+  }, []);
+
   // Safely access coach classes or use defaults
-  const coachClasses = coachingDetails.coachClasses || defaultCoachClasses;
+  const coachClasses = (coachingDetails.coachClasses && coachingDetails.coachClasses.length > 0) 
+    ? coachingDetails.coachClasses 
+    : defaultCoachClasses;
+  
+  // Ensure all coach classes have the required fields
+  const normalizedCoachClasses = coachClasses.map(cls => ({
+    ...cls,
+    minTravelers: cls.minTravelers ?? (() => {
+      switch(cls.type) {
+        case 'D': return 10;
+        case 'F': return 15;
+        case 'G': return 31;
+        default: return 0;
+      }
+    })(),
+    maxTravelers: cls.maxTravelers ?? (() => {
+      switch(cls.type) {
+        case 'D': return 14;
+        case 'F': return 30;
+        case 'G': return 45;
+        default: return 0;
+      }
+    })()
+  }));
+  
+  console.log('Normalized coach classes:', JSON.stringify(normalizedCoachClasses, null, 2));
 
   const updateCoachClass = (classId: string, field: string, value: any) => {
-    const newClasses = coachClasses.map(cc => 
+    const newClasses = normalizedCoachClasses.map(cc => 
       cc.id === classId ? { ...cc, [field]: value } : cc
     );
     
@@ -53,33 +101,58 @@ const CoachClassSection: React.FC<CoachClassSectionProps> = ({
 
   const updateCoachingDetails = (field: string, value: any) => {
     // Create a complete new details object preserving ALL existing properties
-    const newDetails = {
+    let newDetails = {
       ...coachingDetails,
       [field]: value,
     };
     
+    // Always update totalCost for all coach classes when driverDays or exchangeRate changes
+    if (field === 'driverDays' || field === 'exchangeRate' || field === 'coachClasses') {
+      newDetails = {
+        ...newDetails,
+        coachClasses: (newDetails.coachClasses || []).map((coachClass: any) => ({
+          ...coachClass,
+          totalCost: calculateCoachClassTotal(coachClass, newDetails)
+        }))
+      };
+    }
+    
     onUpdate(transport.id, 'coachingDetails', newDetails);
+  };
+  
+  // Calculate total cost for a coach class considering exchange rate, daily rate, days, and entireRate flag
+  const calculateCoachClassTotal = (coachClass: any, details: any) => {
+    const { driverDays = 1, exchangeRate = 1 } = details || {};
+    const dailyRate = coachClass.dailyRate || 0;
+    
+    // If entireRate is true, use the daily rate as is, otherwise multiply by number of days
+    const baseAmount = coachClass.entireRate ? dailyRate : dailyRate * driverDays;
+    
+    // Convert to USD using exchange rate
+    return baseAmount * exchangeRate;
   };
 
   const calculateTotals = (coachClass: CoachClass) => {
-    const { driverDays, exchangeRate, markupRate } = coachingDetails;
+    const { driverDays, exchangeRate } = coachingDetails;
     const dailyRate = coachClass.dailyRate || 0;
-    const baseNetForeign = dailyRate * driverDays;
-    const baseUSDNet = baseNetForeign * exchangeRate;
-    const baseUSDSell = baseUSDNet * markupRate;
+    
+    // If entireRate is true, don't multiply by driverDays
+    const baseNetForeign = coachClass.entireRate ? dailyRate : dailyRate * driverDays;
+    const usdNet = baseNetForeign * exchangeRate;
 
     // Get extras if they exist, otherwise use an empty array
     const extrasArray = coachingDetails.extras || [];
     
-    // Calculate extras total only if extras exist
-    const extrasTotal = extrasArray
-      .filter(extra => extra.enabled)
-      .reduce((sum, extra) => sum + ((extra.rate || 0) * (extra.days || 0)), 0);
+    // Calculate extras total only if extras exist and additionalServicesIncluded is false
+    const extrasTotal = coachClass.additionalServicesIncluded ? 0 : 
+      extrasArray
+        .filter(extra => extra.enabled)
+        .reduce((sum, extra) => sum + ((extra.rate || 0) * (extra.days || 0)), 0);
 
     return {
       netForeign: baseNetForeign,
-      usdNet: baseUSDNet,
-      usdSell: baseUSDSell + extrasTotal
+      usdNet: usdNet,
+      usdSell: usdNet + extrasTotal
     };
   };
 
@@ -89,53 +162,95 @@ const CoachClassSection: React.FC<CoachClassSectionProps> = ({
         <CardTitle>Coach Classes</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        {coachClasses.map((coachClass) => (
+        {normalizedCoachClasses.map((coachClass) => (
           <div key={coachClass.id} className="space-y-4 border-b pb-4 last:border-0">
-            <div className="flex items-center justify-between">
-              <Label className="text-lg font-semibold">Class {coachClass.type}</Label>
+            <div className="flex items-center gap-3">
               <Checkbox
                 checked={coachClass.enabled}
                 onCheckedChange={(checked) => 
                   updateCoachClass(coachClass.id, 'enabled', checked)
                 }
+                className="mt-0"
               />
+              <div className="flex flex-col">
+                <Label className="text-lg font-semibold">
+                  Class {coachClass.type}{coachClass.luxuryEdition ? '+' : ''}
+                </Label>
+                <span className="text-sm text-muted-foreground">
+                  {formatTravelerRange(coachClass.minTravelers, coachClass.maxTravelers)}
+                </span>
+              </div>
             </div>
             
             {coachClass.enabled && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label>Type</Label>
-                  <Select
-                    value={coachClass.type}
-                    onValueChange={(value) => updateCoachClass(coachClass.id, 'type', value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="D">Class D (14 seats)</SelectItem>
-                      <SelectItem value="F">Class F (30 seats)</SelectItem>
-                      <SelectItem value="G">Class G (45 seats)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 
+                <div className="space-y-2">
+                  <Label className="invisible">Luxury</Label>
+                  <div className="flex items-center h-10">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`luxury-${coachClass.id}`}
+                        checked={coachClass.luxuryEdition}
+                        onCheckedChange={(checked) => 
+                          updateCoachClass(coachClass.id, 'luxuryEdition', checked)
+                        }
+                        className="mt-0"
+                      />
+                      <Label htmlFor={`luxury-${coachClass.id}`} className="text-sm font-medium leading-none">
+                        Luxury Edition (+)
+                      </Label>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="space-y-2">
                   <Label>Max Capacity</Label>
                   <Input
                     type="number"
+                    readOnly={true}
                     value={coachClass.maxCapacity}
                     onChange={(e) => updateCoachClass(coachClass.id, 'maxCapacity', parseInt(e.target.value) || 0)}
                   />
                 </div>
                 
                 <div className="space-y-2">
-                  <Label>Daily Rate ({coachingDetails.selectedCurrency})</Label>
+                  <Label>{coachClass.entireRate ? 'Entire Rate' : 'Daily Rate'} ({coachingDetails.selectedCurrency})</Label>
                   <Input
                     type="number"
                     value={coachClass.dailyRate}
                     onChange={(e) => updateCoachClass(coachClass.id, 'dailyRate', parseFloat(e.target.value) || 0)}
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="invisible">Rate Type</Label>
+                  <div className="flex flex-col space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id={`entire-rate-${coachClass.id}`}
+                        checked={coachClass.entireRate}
+                        onCheckedChange={(checked) => 
+                          updateCoachClass(coachClass.id, 'entireRate', checked)
+                        }
+                      />
+                      <Label htmlFor={`entire-rate-${coachClass.id}`} className="text-sm">
+                        Entire Rate
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id={`additional-services-included-${coachClass.id}`}
+                        checked={coachClass.additionalServicesIncluded || false}
+                        onCheckedChange={(checked) => 
+                          updateCoachClass(coachClass.id, 'additionalServicesIncluded', checked)
+                        }
+                      />
+                      <Label htmlFor={`additional-services-included-${coachClass.id}`} className="text-sm">
+                        Services included
+                      </Label>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}

@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { Transportation, Currency } from '@/types/quote';
-import { useQuote } from '@/context/QuoteContext';
+import { useQuote, Quote } from '@/context/QuoteContext';
 
 interface DateAndCurrencySectionProps {
   transport: Transportation;
@@ -22,17 +22,25 @@ const DateAndCurrencySection: React.FC<DateAndCurrencySectionProps> = ({
   transport,
   onUpdate,
 }) => {
-  const { exchangeRates } = useQuote();
+  const { exchangeRates, quote } = useQuote();
   const defaultCurrency = 'EUR' as Currency;
   const defaultExchangeRate = exchangeRates.find(rate => rate.code === defaultCurrency)?.rate || 1.25;
+  
+  const defaultCoachClasses = [
+    { id: '1', type: 'D', minTravelers: 10, maxTravelers: 14, maxCapacity: 14, dailyRate: 540, currency: defaultCurrency, enabled: true, luxuryEdition: false, entireRate: false },
+    { id: '2', type: 'F', minTravelers: 15, maxTravelers: 30, maxCapacity: 30, dailyRate: 500, currency: defaultCurrency, enabled: false, luxuryEdition: false, entireRate: false },
+    { id: '3', type: 'G', minTravelers: 31, maxTravelers: 45, maxCapacity: 45, dailyRate: 400, currency: defaultCurrency, enabled: false, luxuryEdition: false, entireRate: false },
+  ];
   
   const coachingDetails = transport.coachingDetails || {
     driverDays: 7,
     selectedCurrency: defaultCurrency,
     exchangeRate: defaultExchangeRate,
-    markupRate: 1.45,
-    coachClasses: [],
+    coachClasses: defaultCoachClasses,
     extras: [],
+    companyName: '',
+    companyContactEmail: '',
+    companyContactPhone: ''
   };
   
   // Update exchange rate when selected currency changes
@@ -44,6 +52,44 @@ const DateAndCurrencySection: React.FC<DateAndCurrencySectionProps> = ({
       }
     }
   }, [coachingDetails.selectedCurrency, exchangeRates]);
+
+  // Preselect coach classes based on selected group ranges
+  useEffect(() => {
+    if (quote.groupType !== 'speculative' || !coachingDetails?.coachClasses) return;
+
+    const selectedRanges = quote.groupRanges?.filter(range => range.selected) || [];
+    if (selectedRanges.length === 0) return;
+
+    // Map of coach class types to their min/max traveler ranges
+    const coachClassRanges = {
+      'D': { min: 10, max: 19 },
+      'F': { min: 15, max: 30 },
+      'G': { min: 31, max: 45 }
+    };
+
+    // Check if any selected group range falls within each coach class range
+    const updatedClasses = coachingDetails.coachClasses.map(coachClass => {
+      const classRange = coachClassRanges[coachClass.type as keyof typeof coachClassRanges];
+      if (!classRange) return coachClass;
+
+      // Enable the coach class if any selected group range falls within its range
+      const shouldEnable = selectedRanges.some(range => 
+        (range.min >= classRange.min && range.min <= classRange.max) ||
+        (range.max >= classRange.min && range.max <= classRange.max) ||
+        (range.min <= classRange.min && range.max >= classRange.max)
+      );
+
+      return {
+        ...coachClass,
+        enabled: shouldEnable
+      };
+    });
+
+    // Only update if there are changes to prevent infinite loops
+    if (JSON.stringify(updatedClasses) !== JSON.stringify(coachingDetails.coachClasses)) {
+      updateCoachingDetails('coachClasses', updatedClasses);
+    }
+  }, [quote.groupRanges, quote.groupType, coachingDetails]);
 
   const updateCoachingDetails = (field: string, value: any) => {
     const newDetails = {
@@ -131,16 +177,43 @@ const DateAndCurrencySection: React.FC<DateAndCurrencySectionProps> = ({
                 type="number"
                 step="0.01"
                 value={coachingDetails.exchangeRate}
-                onChange={(e) => updateCoachingDetails('exchangeRate', parseFloat(e.target.value) || 0)}
+                readOnly={true}
+                className="bg-muted"
+              />
+            </div>
+
+          </div>
+        </div>
+
+        <Separator />
+
+        <div className="space-y-4">
+          <div className="text-sm font-medium">Company Information</div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label>Company Name</Label>
+              <Input
+                value={coachingDetails.companyName || ''}
+                onChange={(e) => updateCoachingDetails('companyName', e.target.value)}
+                placeholder="Enter company name"
               />
             </div>
             <div className="space-y-2">
-              <Label>Markup Rate</Label>
-              <Input 
-                type="number"
-                step="0.01"
-                value={coachingDetails.markupRate}
-                onChange={(e) => updateCoachingDetails('markupRate', parseFloat(e.target.value) || 0)}
+              <Label>Contact Email</Label>
+              <Input
+                type="email"
+                value={coachingDetails.companyContactEmail || ''}
+                onChange={(e) => updateCoachingDetails('companyContactEmail', e.target.value)}
+                placeholder="contact@company.com"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Contact Phone</Label>
+              <Input
+                type="tel"
+                value={coachingDetails.companyContactPhone || ''}
+                onChange={(e) => updateCoachingDetails('companyContactPhone', e.target.value)}
+                placeholder="+1 (555) 123-4567"
               />
             </div>
           </div>

@@ -79,29 +79,7 @@ const TransportCard: React.FC<TransportCardProps> = ({
         )}
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor={`transport-type-${transport.id}`}>Type</Label>
-            <Select
-              value={transport.type}
-              onValueChange={(value) => updateTransport(transport.id, 'type', value)}
-            >
-              <SelectTrigger id={`transport-type-${transport.id}`}>
-                <SelectValue placeholder="Select type" />
-              </SelectTrigger>
-              <SelectContent>
-                {transportTypes.map(type => (
-                  <SelectItem key={type.value} value={type.value}>
-                    <span className="flex items-center gap-2">
-                      <type.icon className="h-4 w-4" />
-                      {type.label}
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div className="space-y-2">
             <Label htmlFor={`transport-from-${transport.id}`}>From</Label>
             <Input
@@ -120,20 +98,6 @@ const TransportCard: React.FC<TransportCardProps> = ({
               onChange={(e) => updateTransport(transport.id, 'to', e.target.value)}
               placeholder="Arrival location"
             />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor={`transport-date-${transport.id}`}>Date</Label>
-            <div className="relative">
-              <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
-              <Input
-                id={`transport-date-${transport.id}`}
-                type="date"
-                value={transport.date instanceof Date ? transport.date.toISOString().split('T')[0] : ''}
-                onChange={handleDateChange}
-                className="pl-9"
-              />
-            </div>
           </div>
         </div>
         
