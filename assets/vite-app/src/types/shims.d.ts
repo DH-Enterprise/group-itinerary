@@ -164,9 +164,6 @@ declare module '@/context/QuoteContext' {
 }
 
 declare module '@/utils/quoteUtils' {
-  import { Quote } from '@/types/quote';
-  
+
   export function generateUniqueId(): string;
-  export function calculateTripDuration(startDate: Date, endDate: Date): number;
-  export function generateQuoteName(quote: Partial<Quote>): string;
 }

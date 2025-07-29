@@ -7,7 +7,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Activity, City, Quote } from '@/types/quote';
 import { formatCurrency } from '@/utils/quoteUtils';
 import DailyActivitiesTab from './DailyActivitiesTab';
-import { useQuote } from '@/context/QuoteContext';
 
 export type ExchangeRate = {
   code: string;
